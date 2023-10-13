@@ -110,14 +110,15 @@ body
     width:400px;
     height:85px;
     background-color:#d0d0d0;
-    margin:10px 5px;
+    margin:10px 5px 0px 5px;
     padding:0px;
     border-style:solid;
     border-color: green;
     border-width: 1px;
     border-radius: 5px;
     float:left;
-    
+	position:relative;
+    z-index:1;
 	box-shadow:0px 0px 5px 1px black;
 }
 
@@ -273,16 +274,19 @@ input[type=number] {
 
 #searchStats
 {
-	width:420px;
+	width:375px;
 	margin: auto;
     clear:both;
 	font-family: Helvetica, Arial, sans-serif;
 	font-weight:bold;
-	font-size:16px;
+	font-size:14px;
     float:none;
-    height:75px;
+    height:40px;
     position:relative;
     left: -2px;
+	z-index:0;
+	border-radius: 0px 0px 12px 12px;
+	color:#333333;
 }
 
 .searchStatsContainer

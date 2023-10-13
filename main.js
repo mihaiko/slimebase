@@ -27,7 +27,7 @@ Nice to have:
 
 class Vector2
 {
-	constructor(x, y) {	this.x = x;	this.y = y; }	
+	constructor(x, y) {	this.x = x;	this.y = y; }
 	add(value) { return new Vector2(this.x + value, this.y + value); }
 	sub(value) { return new Vector2(this.x - value, this.y - value); }
 	mul(value) { return new Vector2(this.x * value, this.y * value); }
