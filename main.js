@@ -9,6 +9,10 @@ P1:
 * make the page discoverable
 
 Nice to have:
+* touch controls for mobile
+* do something on honey pixel clicked
+* restrict canvas movement to left click
+* make pages button not offset
 * add tooltips
 * fix paging issue -> on resize from small to big -> last pages bs
 * profile
