@@ -1384,7 +1384,7 @@ function updateTimeElapsed()
 	document.getElementById("timeElapsedValue").innerHTML = timeElapsedString;
 
 	let searchInProgressText = "Search in progress";
-	for(let i = 0; i < timeElapsed % 3; ++i)
+	for(let i = 0; i < timeElapsed % 4; ++i)
 		searchInProgressText += ".";
 
 	document.getElementById("searchInProgress").innerHTML = searchInProgressText;
