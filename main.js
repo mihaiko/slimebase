@@ -5,7 +5,6 @@ P1:
 * add "by Wicked" in the title
 * donate button + slime animation
 * add page metadata
-* upload page
 * make the page discoverable
 
 Nice to have:
@@ -1251,7 +1250,7 @@ function processCurrentKhalooph()
 	}
 	
 	CurrentChunksChecked += (KhaloophSize - ClusterSizeOverlap) ** 2;
-	document.getElementById("chunksCheckedValue").innerHTML = CurrentChunksChecked;	
+	document.getElementById("chunksCheckedValue").innerHTML = Intl.NumberFormat().format(CurrentChunksChecked);
 
 	setNextKhalooph();
 	setTimeout(processCurrentKhalooph, 0);
