@@ -1,0 +1,298 @@
+body
+{
+    text-align: left;
+	font-family:Arial, Helvetica, sans-serif;
+	margin:0px;
+	background-color: #444444;
+}
+
+#container
+{
+	margin: auto;
+	padding: 20px 0px;
+	background-color: #405555;
+	box-shadow:0px 0px 10px 7px black;
+}
+
+.resultContainer
+{
+    float: left;
+    padding: 3px 5px;
+    cursor:pointer;
+    font-family:Arial, Helvetica, sans-serif;
+    margin:10px 2px;
+    user-select: none;
+}
+
+.resultContainer:hover
+{
+    box-shadow:  0px 0px 3px 4px #44bb44 inset;
+}
+
+.resultLine
+{
+    margin: 0px 5px;
+    width: 132px;
+    height:30px;
+    border-radius: 8px;
+    box-shadow:0px 0px 3px 1px black;
+    margin: 8px 6px;
+}
+
+.label, .value
+{
+    display: block;
+    font-weight: bold;
+    float:left;
+    text-align: center;
+    border-color: #44bb44;
+    border-style: solid;
+    border-width: 3px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    height:15px;
+}
+
+.label
+{
+    width:40px;
+    background-color: #44bb44;
+    border-bottom-left-radius: 8px;
+    border-top-left-radius: 8px;
+}
+
+.value
+{
+    width:80px;
+    background-color:white;
+    border-bottom-right-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+#canvasDiv
+{
+    clear:both;
+}
+
+.inputField
+{
+    text-align: center;
+	border-radius:4px;
+	border-style:none;
+	padding:2px 4px;
+	margin:2px;
+	background-color:white;
+	font-size:14px;
+    color:black;
+}
+
+.inputField:disabled
+{
+    background-color:#d0d0d0;
+}
+
+#seed{ width:155px; }
+#searchlimit{ width:35px; }
+#searchdistance{ width:65px; }
+#xvalue, #zvalue{ width:65px; }
+#xcluster, #ycluster{ width:28px; }
+
+#controls
+{
+    width:820px;
+    margin: auto;
+	margin-top:20px;
+    margin-bottom: 10px;
+}
+
+.control
+{
+    width:400px;
+    height:85px;
+    background-color:#d0d0d0;
+    margin:10px 5px;
+    padding:0px;
+    border-style:solid;
+    border-color: green;
+    border-width: 1px;
+    border-radius: 5px;
+    float:left;
+    
+	box-shadow:0px 0px 5px 1px black;
+}
+
+.controls_title
+{
+    border-radius: 5px 5px 0px 0px;
+    padding-top:5px;
+    height:20px;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 2px solid green;
+    background-color: #5CD154;
+    font-size: 18px;
+    font-family: Helvetica, Arial, sans-serif;
+    color:#333333;
+}
+
+.controls_content
+{
+    padding:5px;
+}
+
+#seed_controls
+{
+    width:175px;
+    text-align: center;
+}
+
+.button_input
+{
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 8px;
+    border-width: 1px;
+    text-transform:uppercase;
+}
+
+.button_input:hover
+{
+    border-color:#44bb44;
+    cursor: pointer;
+}
+
+.button_input:disabled
+{
+    cursor:auto;
+    border-color:gray;
+}
+
+#gotoButton, #searchButton
+{
+    width:50px;
+    height:40px;
+    margin:4px 0px 0px 0px;
+}
+
+#gotoButton
+{
+    margin:4px 0px 0px 5px;
+}
+
+#randomSeed
+{
+    margin-top: 5px;
+    width: 160px;
+}
+
+#goto_controls
+{
+    width:170px;
+}
+
+#goto_left
+{
+    float:left;
+    padding-left:5px;
+}
+
+.inner_control
+{
+    clear: both;
+}
+
+.inner_control_label
+{
+    font-size: 16px;
+    font-weight: bold;
+    color:#444444;
+    padding-top: 4px;
+    padding-right: 5px;
+    float:left;
+}
+
+.inner_control_input
+{
+    float:right;
+}
+
+#search_controls
+{
+    width: 430px;
+}
+
+#searchResults
+{
+    margin: auto;
+    clear: both;
+}
+
+#search_left, #search_mid, #search_right
+{
+    float:left;
+    padding: 0px 5px;
+}
+
+#search_left, #search_mid
+{
+    border-right: 1px solid green;
+}
+
+#reverseSearch
+{
+    margin:6px 35px 0px 0px;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+  }
+
+#resultsControls
+{
+    margin:auto;
+    width:800px;
+    text-align: center;
+    color:#44bb44;
+    font-size: 20px;
+    font-weight: bolder;
+    user-select: none;
+    clear:both;
+}
+
+.resultPageControl
+{
+    cursor: pointer;
+    user-select: none;
+}
+
+#searchStats
+{
+	width:420px;
+	margin: auto;
+    clear:both;
+	font-family: Helvetica, Arial, sans-serif;
+	font-weight:bold;
+	font-size:16px;
+    float:none;
+    height:75px;
+    position:relative;
+    left: -2px;
+}
+
+.searchStatsContainer
+{
+    float:left;
+    text-align:center;
+    padding:0px 10px;
+}
+
+#timeElapsed, #chunksChecked
+{
+    border-right: 1px solid green;
+}
