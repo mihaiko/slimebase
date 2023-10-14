@@ -1,13 +1,12 @@
 /*
 P1:
-* optimize bedrock algorithm
-* make honey stay on screen less
-* add "by Wicked" in the title
 * donate button + slime animation
 * add page metadata
 * make the page discoverable
 
 Nice to have:
+* make honey stay on screen less
+* optimize bedrock algorithm
 * run on the GPU
 * touch controls for mobile
 * do something on honey pixel clicked

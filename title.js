@@ -71,7 +71,7 @@ const BORDER_COLORS_ARRAY = ["#338833", "#227722", "#115522"];
 const HONEY_COLOR = "#EBA937";
 const ANIM_COLORS = ["#55dd44", "#44cc44"];
 
-var TITLE_TOTAL_SIZE = new Vector2(CANVAS_TOTAL_SIZE.x, 120);
+var TITLE_TOTAL_SIZE = new Vector2(CANVAS_TOTAL_SIZE.x, 182);
 const Y_TITLE_OFFSET = 10;
 const PIXEL_SIZE = 20;
 const PIXEL_SPACING = 4;
@@ -115,7 +115,7 @@ function createTitle()
 
 function onWindowResizeTitle()
 {
-	TITLE_TOTAL_SIZE = new Vector2(CANVAS_TOTAL_SIZE.x, 120);
+	TITLE_TOTAL_SIZE = new Vector2(CANVAS_TOTAL_SIZE.x, 182);
 	LOOP_INTERVAL = TITLE_TOTAL_SIZE.x / PIXEL_SIZE;
 	TEXT_WIDTH = TEXT_ARRAY[0].length * PIXEL_SIZE;
 	TEXT_OFFSET = (TITLE_TOTAL_SIZE.x - TEXT_WIDTH) / 2;
@@ -128,6 +128,25 @@ function onWindowResizeTitle()
     ctx.fillRect(0, 0, TITLE_TOTAL_SIZE.x, TITLE_TOTAL_SIZE.y);
 	
     drawTitleShadow();
+	drawAuthor();
+}
+
+function drawAuthor()
+{
+	const AUTHOR_OFFSET = new Vector2(250, 160);
+	let ctx = getTitleContext();
+	ctx.fillStyle = COLORS_ARRAY[1];
+	let position = new Vector2(TITLE_TOTAL_SIZE.x / 2 + AUTHOR_OFFSET.x, AUTHOR_OFFSET.y);
+	ctx.shadowColor = "black";
+    ctx.shadowBlur = 4;
+	ctx.textAlign = "left";
+	ctx.font = "64px Freestyle Script";
+	ctx.fillText("by Wicked", position.x, position.y);
+	ctx.lineWidth = 0.5;
+	ctx.strokeStyle = "#33885599";
+	ctx.strokeText("by Wicked", position.x, position.y);
+
+	ctx.shadowBlur = 0;
 }
 
 function getSlimeColor()

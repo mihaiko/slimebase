@@ -109,7 +109,7 @@ body
     width:400px;
     height:85px;
     background-color:#d0d0d0;
-    margin:10px 5px 0px 5px;
+    margin:-10px 5px 0px 5px;
     padding:0px;
     border-style:solid;
     border-color: green;
@@ -306,9 +306,11 @@ input[type=number] {
     width:320px;
     height:27px;
     border-radius: 12px;
-    margin:20px auto 0px auto;    
+    margin:auto;    
     user-select: none;
-	box-shadow:0px 0px 4px 1px black;
+	box-shadow:0px 0px 4px 1px #1a1a1adb;
+    position:relative;
+    top:-20px;
 }
 
 #versionSwitch > div
