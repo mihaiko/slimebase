@@ -351,3 +351,9 @@ input[type=number] {
 {
     cursor:pointer;
 }
+
+#donationDiv
+{
+    width:180px;
+    margin:auto;
+}

@@ -1,10 +1,12 @@
 /*
 P1:
-* donate button + slime animation
+* slime animation
 * add page metadata
 * make the page discoverable
+* rights reserved stuff
 
 Nice to have:
+* make page extend to bottom
 * make honey stay on screen less
 * optimize bedrock algorithm
 * run on the GPU
