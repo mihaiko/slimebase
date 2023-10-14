@@ -1,6 +1,6 @@
 /*
 P1:
-* add bedrock edition algorithm
+* optimize bedrock algorithm
 * make honey stay on screen less
 * add "by Wicked" in the title
 * donate button + slime animation
@@ -8,6 +8,7 @@ P1:
 * make the page discoverable
 
 Nice to have:
+* run on the GPU
 * touch controls for mobile
 * do something on honey pixel clicked
 * restrict canvas movement to left click
@@ -185,7 +186,8 @@ const DirectionRight = new Vector2(1, 0);
 const DirectionDown = new Vector2(0, 1);
 const DirectionLeft = new Vector2(-1, 0);
 
-const KhaloophSize = 200;
+const KhaloophSizeJava = 200;
+const KhaloophSizeBedrock = 120;
 var KhaloophSearchMin = 0;
 var CurrentKhalooph = new Khalooph();
 var CurrentDirection = new Direction();
@@ -225,6 +227,8 @@ var ShouldStopSearchTimer = false;
 var UpdateSearchStatsIntervalId = 0;
 var CurrentChunksChecked = 0;
 
+var IsBedrock = false;
+
 class Random {
     constructor(seed) {
         this.seed = (seed ^ 0x5DEECE66Dn) & 281474976710655n;
@@ -242,8 +246,16 @@ class Random {
     }
 }
 
+function getKhaloophSize()
+{
+	return IsBedrock ? KhaloophSizeBedrock : KhaloophSizeJava;
+}
+
 function isSlimeChunk(seed, x, z)
 {
+	if(IsBedrock)
+		return isSlimeChunkBedrock(x, z);
+
 	let rngGen = new Random(seed + BigInt(Math.imul(Math.imul(x, x), 4987142)) + BigInt(Math.imul(x, 5947611)) + BigInt(Math.imul(z, z)) * 4392871n + BigInt(Math.imul(z, 389711)) ^ 987234911n);
 	return rngGen.nextInt();
 }
@@ -286,6 +298,7 @@ function setInputs()
 	let searchdistance = localStorage.getItem("searchdistance");
 	let searchlimit = localStorage.getItem("searchlimit");
 	let invertedsearch = localStorage.getItem("invertedsearch");
+	let isBedrock = localStorage.getItem("isBedrock");
 
 	if(seed)
 	{		
@@ -309,6 +322,8 @@ function setInputs()
 		document.getElementById("searchlimit").value = searchlimit;
 	if(invertedsearch)
 		document.getElementById("reverseSearch").checked = invertedsearch == "true";
+	if(isBedrock == "true")
+		switchToBedrock();
 }
 
 function onSeedChanged()
@@ -321,7 +336,6 @@ function onSeedChanged()
 	}
 	
 	resetValues();
-	drawCanvas();
 
 	onInputChanged();
 }
@@ -1108,14 +1122,15 @@ function checkClusterWidthHeight(position, chunksArray)
 {
 	let xSearchHeight = position.x + ClusterSize.y;
 	let ySearchWidth = position.y + ClusterSize.x;
+	let khaloophSize = getKhaloophSize();
 
 	for(i = position.x; i < xSearchHeight; ++i)
 	{
-		if(i >= KhaloophSize)
+		if(i >= khaloophSize)
 			return false;
 
 		for(j = position.y; j < ySearchWidth; ++j)
-			if (j >= KhaloophSize || !chunksArray[i][j])
+			if (j >= khaloophSize || !chunksArray[i][j])
 				return false;
 	}
 	
@@ -1136,14 +1151,15 @@ function checkClusterHeightWidth(position, chunksArray)
 {
 	let xSearchWidth = position.x + ClusterSize.x;
 	let ySearchHeight = position.y + ClusterSize.y;
+	let khaloophSize = getKhaloophSize();
 
 	for(i = position.x; i < xSearchWidth; ++i)
 	{
-		if(i >= KhaloophSize)
+		if(i >= khaloophSize)
 			return false;
 
 		for(j = position.y; j < ySearchHeight; ++j)
-			if(j >= KhaloophSize || !chunksArray[i][j])
+			if(j >= khaloophSize || !chunksArray[i][j])
 				return false;
 	}
 	
@@ -1224,7 +1240,8 @@ function processCurrentKhalooph()
 	}
 
 	let chunksArray = [];
-	for(let i = 0; i < KhaloophSize; i++)
+	let khaloophSize = getKhaloophSize();
+	for(let i = 0; i < khaloophSize; i++)
 		chunksArray[i] = [];
 
 	let khaloophStart = CurrentKhalooph.start;
@@ -1249,7 +1266,7 @@ function processCurrentKhalooph()
 		DrawCanvasRequested = false;
 	}
 	
-	CurrentChunksChecked += (KhaloophSize - ClusterSizeOverlap) ** 2;
+	CurrentChunksChecked += (khaloophSize - ClusterSizeOverlap) ** 2;
 	document.getElementById("chunksCheckedValue").innerHTML = Intl.NumberFormat().format(CurrentChunksChecked);
 
 	setNextKhalooph();
@@ -1258,14 +1275,16 @@ function processCurrentKhalooph()
 
 function setInitialKhalooph(startPosition)
 {
-	CurrentKhalooph.start = startPosition.sub(Math.floor(KhaloophSize / 2));
-	CurrentKhalooph.end = CurrentKhalooph.start.add(KhaloophSize);
+	let khaloophSize = getKhaloophSize();
+	CurrentKhalooph.start = startPosition.sub(Math.floor(khaloophSize / 2));
+	CurrentKhalooph.end = CurrentKhalooph.start.add(khaloophSize);
 }
 
 function setNextKhalooph()
 {
-	CurrentKhalooph.start = CurrentKhalooph.start.addPos(CurrentDirection.direction.mul(KhaloophSize - ClusterSizeOverlap));
-	CurrentKhalooph.end = CurrentKhalooph.start.add(KhaloophSize);
+	let khaloophSize = getKhaloophSize();
+	CurrentKhalooph.start = CurrentKhalooph.start.addPos(CurrentDirection.direction.mul(khaloophSize - ClusterSizeOverlap));
+	CurrentKhalooph.end = CurrentKhalooph.start.add(khaloophSize);
 
 	KhaloophsTillDirectionChange--;
 	if(KhaloophsTillDirectionChange == 0)
@@ -1320,7 +1339,7 @@ function startSearch()
 	
 	ClusterSize.x = parseInt(document.getElementById("xcluster").value);
 	ClusterSize.y = parseInt(document.getElementById("ycluster").value);
-	ClusterSize = ClusterSize.clamp(1, 150);
+	ClusterSize = ClusterSize.clamp(1, 100);
 	document.getElementById("xcluster").value = ClusterSize.x;
 	document.getElementById("ycluster").value = ClusterSize.y;
 	
@@ -1335,7 +1354,7 @@ function startSearch()
 	let clusterSizeMax = Math.max(ClusterSize.x, ClusterSize.y);
 
 	ClusterSizeOverlap = clusterSizeMax - 1;
-	KhaloophSearchMin = KhaloophSize - clusterSizeMin + 1;
+	KhaloophSearchMin = getKhaloophSize() - clusterSizeMin + 1;
 
 	SearchOrigin = PinPosition;
 
@@ -1415,19 +1434,29 @@ function updateInputs()
 	searchInputs.push(document.getElementById("ycluster"));
 	searchInputs.push(document.getElementById("searchlimit"));
 	searchInputs.push(document.getElementById("searchdistance"));
-	searchInputs.push(document.getElementById("seed"));
 	searchInputs.push(document.getElementById("reverseSearch"));
+	searchInputs.push(document.getElementById("seed"));
 	searchInputs.push(document.getElementById("randomSeed"));
 	
 	if(SearchInProgress)
 	{
 		searchButton.value = "STOP";
 		searchInputs.forEach(element => element.setAttribute("disabled", ""));
+
+		if(IsBedrock)
+			document.getElementById("javaEdition").setAttribute("class", "alternateVersion");
+		else
+			document.getElementById("bedrockEdition").setAttribute("class", "alternateVersion");
 	}
 	else
 	{
 		searchButton.value = "GO";
 		searchInputs.forEach(element => element.removeAttribute("disabled"));
+
+		if(IsBedrock)
+			document.getElementById("javaEdition").setAttribute("class", "alternateVersion selectable");
+		else
+			document.getElementById("bedrockEdition").setAttribute("class", "alternateVersion selectable");
 	}
 
 	onInputChanged();
@@ -1447,6 +1476,7 @@ function onInputChanged()
 	localStorage.setItem("searchdistance", document.getElementById("searchdistance").value);
 	localStorage.setItem("searchlimit", document.getElementById("searchlimit").value);
 	localStorage.setItem("invertedsearch", document.getElementById("reverseSearch").checked);
+	localStorage.setItem("isBedrock", IsBedrock);
 }
 
 String.prototype.hashCode = function() 
@@ -1456,7 +1486,7 @@ String.prototype.hashCode = function()
 	if (this.length === 0)
 		return hash;
 
-    for (let i = 0; i < this.length; i++) 
+    for (let i = 0; i < this.length; i++)
 	{
 		const char = this.charCodeAt(i);
 		hash = (hash << 5) - hash + char;
@@ -1465,3 +1495,37 @@ String.prototype.hashCode = function()
 
 	return hash;
 };
+
+function switchToJava()
+{
+	if(SearchInProgress)
+		return;
+
+	IsBedrock = false;
+
+	document.getElementById("javaEdition").setAttribute("class", "selectedVersion");
+	document.getElementById("bedrockEdition").setAttribute("class", "alternateVersion selectable");
+	
+	document.getElementById("seed").removeAttribute("disabled");
+	document.getElementById("randomSeed").removeAttribute("disabled");
+
+	resetValues();
+	onInputChanged();
+}
+
+function switchToBedrock()
+{
+	if(SearchInProgress)
+		return;
+
+	IsBedrock = true;
+
+	document.getElementById("javaEdition").setAttribute("class", "alternateVersion selectable");
+	document.getElementById("bedrockEdition").setAttribute("class", "selectedVersion");
+	
+	document.getElementById("seed").setAttribute("disabled", "");
+	document.getElementById("randomSeed").setAttribute("disabled", "");
+	
+	resetValues();
+	onInputChanged();
+}

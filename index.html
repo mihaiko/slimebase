@@ -3,12 +3,21 @@
 <head>
 <title>Slime Base by Wicked</title>
 <link rel="stylesheet" href="main.css">
+<script src="bedrock.js"></script>
 <script src="main.js"></script>
 <script src="title.js"></script>
 </head>
 <body onload="createCanvas(); createTitle();" >
 	<div id="container">
 		<div id="title_div">
+		</div>
+		<div id="versionSwitch">
+			<div id="javaEdition" class="selectedVersion" onclick="switchToJava()">
+				Java Edition
+			</div>
+			<div id="bedrockEdition" class="alternateVersion selectable" onclick="switchToBedrock()">
+				Bedrock Edition
+			</div>
 		</div>
 		<div id="controls">
 			<div class="control" id="seed_controls">
