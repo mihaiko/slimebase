@@ -978,8 +978,8 @@ function drawCoordinates()
 	{
 		if(i % interval == 0)
 		{
-			ctx.fillText(i*16, CANVAS_PADDING_SIDES + (i * GRID_SPACING) + CanvasOffset.x, CANVAS_WORKABLE_SIZE.y + CANVAS_PADDING_TOP + 20);
-			ctx.fillText(i*16, CANVAS_PADDING_SIDES + (i * GRID_SPACING) + CanvasOffset.x, CANVAS_PADDING_TOP - 10);
+			ctx.fillText(i*CHUNK_SIZE, CANVAS_PADDING_SIDES + (i * GRID_SPACING) + CanvasOffset.x, CANVAS_WORKABLE_SIZE.y + CANVAS_PADDING_TOP + 20);
+			ctx.fillText(i*CHUNK_SIZE, CANVAS_PADDING_SIDES + (i * GRID_SPACING) + CanvasOffset.x, CANVAS_PADDING_TOP - 10);
 		}
 	}
 	
@@ -987,8 +987,8 @@ function drawCoordinates()
 	{
 		if(j % (interval/2) == 0)
 		{
-			ctx.fillText(j*16, CANVAS_PADDING_SIDES / 2, CANVAS_PADDING_TOP + (j * GRID_SPACING) + CanvasOffset.y + 3);
-			ctx.fillText(j*16, CANVAS_TOTAL_SIZE.x - CANVAS_PADDING_SIDES / 2, CANVAS_PADDING_TOP + (j * GRID_SPACING) + CanvasOffset.y + 3);
+			ctx.fillText(j*CHUNK_SIZE, CANVAS_PADDING_SIDES / 2, CANVAS_PADDING_TOP + (j * GRID_SPACING) + CanvasOffset.y + 3);
+			ctx.fillText(j*CHUNK_SIZE, CANVAS_TOTAL_SIZE.x - CANVAS_PADDING_SIDES / 2, CANVAS_PADDING_TOP + (j * GRID_SPACING) + CanvasOffset.y + 3);
 		}
 	}
 }
@@ -1214,8 +1214,8 @@ function getClusterFromChunksList(chunks)
 
 function processCurrentKhalooph()
 {
-	if (Math.abs(CurrentKhalooph.start.x) + Math.abs(CurrentKhalooph.end.x) > (SearchDistance*16)
-	|| Math.abs(CurrentKhalooph.start.y) + Math.abs(CurrentKhalooph.end.y) > (SearchDistance*16)
+	if (Math.abs(CurrentKhalooph.start.x) + Math.abs(CurrentKhalooph.end.x) > (SearchDistance / CHUNK_SIZE)
+	|| Math.abs(CurrentKhalooph.start.y) + Math.abs(CurrentKhalooph.end.y) > (SearchDistance / CHUNK_SIZE)
 	|| ResultsArray.length >= SearchResultLimit
 	|| StopSearchRequested)
 	{
