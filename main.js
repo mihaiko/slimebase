@@ -1,6 +1,5 @@
 /*
 P1:
-* slime animation
 * add page metadata
 * make the page discoverable
 * rights reserved stuff
