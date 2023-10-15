@@ -289,6 +289,9 @@ function createCanvas()
 	setInputs();
 
 	drawCanvas();
+
+	drawSlimy();
+	setInterval(drawSlimy, SLIMY_UPDATE_INTERVAL);	
 }
 
 function setInputs()
@@ -577,14 +580,14 @@ function getCenter()
 
 function drawGrid()
 {
-	let gridBold = GRID_BOLD*GRID_SPACING;
+	let gridBold = GRID_BOLD * GRID_SPACING;
 	let center = getCenter();
 	center = center.subPos(center.mod(GRID_SPACING));
 	
-	let verticalLines = Math.ceil(CANVAS_WORKABLE_SIZE.x / GRID_SPACING);
-	let horizontalLines = Math.ceil(CANVAS_WORKABLE_SIZE.y / GRID_SPACING);
+	let verticalLines = Math.round(CANVAS_WORKABLE_SIZE.x / GRID_SPACING);
+	let horizontalLines = Math.round(CANVAS_WORKABLE_SIZE.y / GRID_SPACING);
 	
-	for(let i = Math.floor(-verticalLines / 2); i <= Math.ceil(verticalLines / 2); ++i)
+	for(let i = Math.floor(-verticalLines / 2); i <= Math.round(verticalLines / 2); ++i)
 	{
 		let Xcoord = (i * GRID_SPACING) + center.x;
 		let width = 0.5;
@@ -595,10 +598,10 @@ function drawGrid()
 		if(Xcoord == 0)
 			width *= 2;
 		
-		drawLine(new Vector2(Xcoord, -CanvasOffset.y), new Vector2(Xcoord, CANVAS_TOTAL_SIZE.y - CanvasOffset.y), GRID_LINE_COLOR, width);
+		drawLine(new Vector2(Xcoord, -CanvasOffset.y), new Vector2(Xcoord, CANVAS_WORKABLE_SIZE.y - CanvasOffset.y), GRID_LINE_COLOR, width);
 	}
 	
-	for(let i = Math.floor(-horizontalLines / 2); i <= Math.ceil(horizontalLines / 2); ++i)
+	for(let i = Math.floor(-horizontalLines / 2); i <= Math.round(horizontalLines / 2); ++i)
 	{
 		let Ycoord = (i * GRID_SPACING) + center.y;
 		let width = 0.5;
@@ -609,7 +612,7 @@ function drawGrid()
 		if(Ycoord == 0)
 			width *= 2;
 		
-		drawLine(new Vector2(-CanvasOffset.x, Ycoord), new Vector2(CANVAS_TOTAL_SIZE.x - CanvasOffset.x, Ycoord), GRID_LINE_COLOR, width);
+		drawLine(new Vector2(-CanvasOffset.x, Ycoord), new Vector2(CANVAS_WORKABLE_SIZE.x - CanvasOffset.x, Ycoord), GRID_LINE_COLOR, width);
 	}
 }
 
@@ -715,10 +718,24 @@ function drawArc(centerPos, radius, color, fill)
 		ctx.stroke();
 }
 
+function isLineInWorkable(startPos, endPos)
+{
+	if(isPositionInWorkable(startPos))
+		return true;
+
+	if(isPositionInWorkable(endPos))
+		return true;
+
+	return false;
+}
+
 function drawLine(startPos, endPos, color, width)
 {
 	let workableStart = globalPosToWorkable(startPos);
 	let workableEnd = globalPosToWorkable(endPos);
+
+	if(!isLineInWorkable(workableStart, workableEnd))
+		return;
 	
 	let ctx = getCanvasContext();
 	ctx.lineWidth = width;
@@ -969,7 +986,7 @@ function drawFullBackground()
 	ctx.fillRect(0, 0, CANVAS_TOTAL_SIZE.x, CANVAS_PADDING_TOP);
 	ctx.fillRect(0, 0, CANVAS_PADDING_SIDES, CANVAS_TOTAL_SIZE.y);
 	ctx.fillRect(CANVAS_TOTAL_SIZE.x - CANVAS_PADDING_SIDES, 0, CANVAS_PADDING_SIDES, CANVAS_TOTAL_SIZE.y);
-	ctx.fillRect(0, CANVAS_TOTAL_SIZE.y - CANVAS_PADDING_BOTTOM, CANVAS_TOTAL_SIZE.x, CANVAS_PADDING_BOTTOM);
+	ctx.fillRect(0, CANVAS_TOTAL_SIZE.y - CANVAS_PADDING_BOTTOM, CANVAS_TOTAL_SIZE.x, CANVAS_PADDING_BOTTOM - SLIMY[0].length * SLIMY_PIXEL_SIZE);
 }
 
 function drawCoordinates()
@@ -1529,4 +1546,33 @@ function switchToBedrock()
 	
 	resetValues();
 	onInputChanged();
+}
+
+function drawSlimy()
+{	
+	let ctx = getCanvasContext();
+	let currentFrame = getNextFrame();
+
+	let slimyWidth = currentFrame[0].length * SLIMY_PIXEL_SIZE;
+	let slimyHeight = currentFrame.length * SLIMY_PIXEL_SIZE;
+	
+	let xOffset = CANVAS_TOTAL_SIZE.x / 2  - slimyWidth / 2;
+	let yOffset = CANVAS_TOTAL_SIZE.y - slimyHeight;
+	
+    ctx.fillStyle = CANVAS_BACKGROUND;
+    ctx.fillRect(xOffset - 1, yOffset - 1, slimyWidth + 2, slimyHeight + 2);
+	
+	for(let currentColumn = 0; currentColumn < currentFrame.length; ++currentColumn)
+	{
+		for(let currentLine = 0; currentLine < currentFrame[currentColumn].length; ++currentLine)
+		{
+			ctx.fillStyle = getAnimColor();
+			
+			let position = new Vector2(currentLine * SLIMY_PIXEL_SIZE, currentColumn * SLIMY_PIXEL_SIZE);
+			if(currentFrame[currentColumn][currentLine])
+            {
+                ctx.fillRect(position.x + xOffset, position.y + yOffset, SLIMY_PIXEL_SIZE, SLIMY_PIXEL_SIZE);
+            }
+		}
+	}
 }
