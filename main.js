@@ -3,8 +3,10 @@ P1:
 * add page metadata
 * make the page discoverable
 * rights reserved stuff
+* add website icon
 
 Nice to have:
+* get actual domain
 * make page extend to bottom
 * make honey stay on screen less
 * optimize bedrock algorithm
