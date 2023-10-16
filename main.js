@@ -546,6 +546,9 @@ function drawLocationPin()
 	let workableBottom = globalPosToWorkable(bottom);
 	let workableLeft   = globalPosToWorkable(left);
 	let workableRight  = globalPosToWorkable(right);
+	
+	if(!isLineInWorkable(workableTop, workableBottom) && !isLineInWorkable(workableLeft, workableRight))
+		return;
 
 	let ctx = getCanvasContext();
 	ctx.beginPath();
