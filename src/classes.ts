@@ -12,7 +12,6 @@ class Vector2
 	floor() { return new Vector2(Math.floor(this.x), Math.floor(this.y)); }
 	ceil() { return new Vector2(Math.ceil(this.x), Math.ceil(this.y)); }
 	round() { return new Vector2(Math.round(this.x), Math.round(this.y)); }
-	//toInt() { return new Vector2(parseInt(this.x), parseInt(this.y)); }
 	copy() { return new Vector2(this.x, this.y); }
 	isZero() { return this.equals(new Vector2(0, 0)); }
 	length() { return this.distance(new Vector2(0, 0)); }

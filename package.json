@@ -1,5 +1,10 @@
 {
   "devDependencies": {
     "typescript": "^5.2.2"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "start": "npx tsc -w"
   }
 }
