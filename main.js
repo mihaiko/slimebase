@@ -74,6 +74,21 @@ function isSlimeChunkBedrock(x, y) {
     let n = mt.random_int(seed);
     return n % 10 == 0;
 }
+class ChunksCache {
+    constructor(size, reference) {
+        this.size = size.copy();
+        this.reference = reference.copy();
+        this.head = new Vector2(0, 0);
+        this.matrix = [];
+        for (let i = 0; i < size.y; ++i) {
+            let row = [];
+            for (let j = 0; j < size.x; ++j) {
+                row.push(false);
+            }
+            this.matrix.push(row);
+        }
+    }
+}
 class Vector2 {
     constructor(x, y) { this.x = x; this.y = y; }
     add(value) { return new Vector2(this.x + value, this.y + value); }
