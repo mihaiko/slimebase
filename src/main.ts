@@ -171,23 +171,28 @@ function isSlimeChunk(seed:bigint, x:number, z:number):boolean
 	return rngGen.nextInt();
 }
 
-function goToPosition()
+function getInputElementById(id:string):HTMLInputElement
 {
-	PinPosition.x = parseFloat((<HTMLInputElement>document.getElementById("xvalue")).value);
-	PinPosition.y = parseFloat((<HTMLInputElement>document.getElementById("zvalue")).value);
+	return <HTMLInputElement>document.getElementById(id);
+}
+
+function goToPosition():void
+{
+	PinPosition.x = parseFloat(getInputElementById("xvalue").value);
+	PinPosition.y = parseFloat(getInputElementById("zvalue").value);
 	
 	CanvasOffset = PinPosition.div(CHUNK_SIZE).mul(GRID_SPACING).subPos(CANVAS_WORKABLE_SIZE.div(2)).mul(-1);
 	
 	drawCanvas();
 }
 
-function createCanvas()
+function createCanvas():void
 {
 	try{
-		Seed = BigInt((<HTMLInputElement>document.getElementById("seed")).value);
+		Seed = BigInt(getInputElementById("seed").value);
 	}
 	catch{
-		Seed = BigInt((<HTMLInputElement>document.getElementById("seed")).value.hashCode());
+		Seed = BigInt(getInputElementById("seed").value.hashCode());
 	}
 	
 	onWindowResize(true);
@@ -204,7 +209,7 @@ function createCanvas()
 	setInterval(drawSlimy, SLIMY_UPDATE_INTERVAL);	
 }
 
-function setInputs()
+function setInputs():void
 {
 	let seed = localStorage.getItem("seed");
 	let xcluster = localStorage.getItem("xcluster");
@@ -227,26 +232,26 @@ function setInputs()
 	else
 		setRandomSeed();
 	if(xcluster)
-		(<HTMLInputElement>document.getElementById("xcluster")).value = xcluster;
+		getInputElementById("xcluster").value = xcluster;
 	if(ycluster)
-		(<HTMLInputElement>document.getElementById("ycluster")).value = ycluster;
+		getInputElementById("ycluster").value = ycluster;
 	if(searchdistance)
-		(<HTMLInputElement>document.getElementById("searchdistance")).value = searchdistance;
+		getInputElementById("searchdistance").value = searchdistance;
 	if(searchlimit)
-		(<HTMLInputElement>document.getElementById("searchlimit")).value = searchlimit;
+		getInputElementById("searchlimit").value = searchlimit;
 	if(invertedsearch)
-		(<HTMLInputElement>document.getElementById("reverseSearch")).checked = invertedsearch == "true";
+		getInputElementById("reverseSearch").checked = invertedsearch == "true";
 	if(isBedrock == "true")
 		switchToBedrock();
 }
 
-function onSeedChanged()
+function onSeedChanged():void
 {
 	try{
-		Seed = BigInt((<HTMLInputElement>document.getElementById("seed")).value);
+		Seed = BigInt(getInputElementById("seed").value);
 	}
 	catch{
-		Seed = BigInt((<HTMLInputElement>document.getElementById("seed")).value.hashCode());
+		Seed = BigInt(getInputElementById("seed").value.hashCode());
 	}
 	
 	resetValues();
@@ -254,7 +259,7 @@ function onSeedChanged()
 	onInputChanged();
 }
 
-function drawCanvas()
+function drawCanvas():void
 {	
 	drawWorkableBackground();
 	drawGrid();
@@ -336,7 +341,7 @@ function getOOSPosition(position:Vector2):OOSResult
 	return new OOSResult(false, DirectionUp, new Vector2(0, 0));
 }
 
-function drawOOSArrow(oosPosition:Vector2)
+function drawOOSArrow(oosPosition:Vector2):void
 {
 	let direction = getCenter().subPos(oosPosition).normalize();
 	let arrowStartPos = oosPosition.addPos(direction.mul(OOS_ARROW_LENGTH));
@@ -353,7 +358,7 @@ function drawOOSArrow(oosPosition:Vector2)
 	
 }
 
-function drawOOSDistance(originalPosition:Vector2, oosResult:OOSResult)
+function drawOOSDistance(originalPosition:Vector2, oosResult:OOSResult):void
 {
 	let distance = originalPosition.distance(oosResult.position.div(GRID_SPACING).mul(CHUNK_SIZE));
 	
@@ -394,7 +399,7 @@ function drawOOSDistance(originalPosition:Vector2, oosResult:OOSResult)
 	ctx.fillText(Math.floor(distance).toString(), workableTextPos.x, workableTextPos.y);
 }
 
-function sortByDistanceToViewport()
+function sortByDistanceToViewport():Cluster[]
 {
 	let OOSResults = Array.from(ResultsArray);
 	let viewportCenter = getCenter().div(GRID_SPACING).mul(CHUNK_SIZE);
@@ -407,7 +412,7 @@ function sortByDistanceToViewport()
 	return OOSResults;
 }
 
-function drawOOSArrowsInRange(OOSResults:Cluster[])
+function drawOOSArrowsInRange(OOSResults:Cluster[]):void
 {
 	for(let i = 0; i < Math.min(OOSResults.length, OOS_MAX_ARROWS); ++i)
 	{
@@ -421,13 +426,13 @@ function drawOOSArrowsInRange(OOSResults:Cluster[])
 	}
 }
 
-function drawOOSArrows()
+function drawOOSArrows():void
 {
 	let OOSResults = sortByDistanceToViewport();
 	drawOOSArrowsInRange(OOSResults);
 }
 
-function drawInnerShadow()
+function drawInnerShadow():void
 {
 	let ctx = getCanvasContext();
     ctx.shadowOffsetX = 0;
@@ -443,7 +448,7 @@ function drawInnerShadow()
 	ctx.shadowBlur = 0;
 }
 
-function drawLocationPin()
+function drawLocationPin():void
 {
 	if(PinPosition.x == 0 && PinPosition.y == 0)
 		return;
@@ -474,7 +479,7 @@ function drawLocationPin()
 	ctx.fill();
 }
 
-function drawCrosshair()
+function drawCrosshair():void
 {	
 	if(!DRAW_CROSSHAIR)
 		return;
@@ -486,12 +491,12 @@ function drawCrosshair()
 	drawLine(new Vector2(center.x - CROSSHAIR_SIZE / 2, center.y), new Vector2(center.x + CROSSHAIR_SIZE / 2, center.y), CROSSHAIR_COLOR, 0.5);
 }
 
-function getCenter()
+function getCenter():Vector2
 {
 	return CANVAS_WORKABLE_SIZE.div(2).subPos(CanvasOffset);
 }
 
-function drawGrid()
+function drawGrid():void
 {
 	let gridBold = GRID_BOLD * GRID_SPACING;
 	let center = getCenter();
@@ -529,7 +534,7 @@ function drawGrid()
 	}
 }
 
-function drawSlimeChunks()
+function drawSlimeChunks():void
 {
 	let minPos = CanvasOffset.mul(-1).div(GRID_SPACING).floor();
 	let maxPos = CanvasOffset.mul(-1).addPos(CANVAS_WORKABLE_SIZE).div(GRID_SPACING).ceil();
@@ -544,7 +549,7 @@ function drawSlimeChunks()
 	}
 }
 
-function drawClusters()
+function drawClusters():void
 {
 	for(let i = 0; i < ResultsArray.length; ++i)
 	{
@@ -557,12 +562,12 @@ function drawClusters()
 	}
 }
 
-function globalPosToWorkable(pos:Vector2)
+function globalPosToWorkable(pos:Vector2):Vector2
 {
 	return CANVAS_WORKABLE_START_POS.addPos(CanvasOffset).addPos(pos);
 }
 
-function isPositionInWorkable(pos:Vector2)
+function isPositionInWorkable(pos:Vector2):boolean
 {
 	if(pos.x < CANVAS_WORKABLE_START_POS.x || pos.y < CANVAS_WORKABLE_START_POS.y)
 		return false;
@@ -573,7 +578,7 @@ function isPositionInWorkable(pos:Vector2)
 	return true;
 }
 
-function isRectInWorkable(start:Vector2, size:Vector2)
+function isRectInWorkable(start:Vector2, size:Vector2):boolean
 {
 	let newPos = start.copy();
 	if(isPositionInWorkable(newPos))
@@ -594,7 +599,7 @@ function isRectInWorkable(start:Vector2, size:Vector2)
 	return false;
 }
 
-function drawRect(position:Vector2, size:Vector2, color:string, fill:boolean, width:number)
+function drawRect(position:Vector2, size:Vector2, color:string, fill:boolean, width:number):void
 {
 	let workablePos = globalPosToWorkable(position);
 	
@@ -618,7 +623,7 @@ function drawRect(position:Vector2, size:Vector2, color:string, fill:boolean, wi
 	ctx.lineWidth = 1;
 }
 
-function isLineInWorkable(startPos:Vector2, endPos:Vector2)
+function isLineInWorkable(startPos:Vector2, endPos:Vector2):boolean
 {
 	if(isPositionInWorkable(startPos))
 		return true;
@@ -629,7 +634,7 @@ function isLineInWorkable(startPos:Vector2, endPos:Vector2)
 	return false;
 }
 
-function drawLine(startPos:Vector2, endPos:Vector2, color:string, width:number)
+function drawLine(startPos:Vector2, endPos:Vector2, color:string, width:number):void
 {
 	let workableStart = globalPosToWorkable(startPos);
 	let workableEnd = globalPosToWorkable(endPos);
@@ -649,7 +654,7 @@ function drawLine(startPos:Vector2, endPos:Vector2, color:string, width:number)
 	ctx.lineWidth = 1;
 }
 
-function drawSlimeChunk(pos:Vector2)
+function drawSlimeChunk(pos:Vector2):void
 {
 	drawRect(pos.mul(GRID_SPACING), new Vector2(GRID_SPACING, GRID_SPACING), INNER_SLIME_CHUNK_COLOR, true, 0.5);
 	drawRect(pos.mul(GRID_SPACING), new Vector2(GRID_SPACING, GRID_SPACING), SLIME_CHUNK_BORDER_COLOR, false, 0.5);
@@ -660,13 +665,13 @@ function getCanvasContext()
 	return CachedCanvasContext;
 }
 
-function setCanvasPositions(position:Vector2)
+function setCanvasPositions(position:Vector2):void
 {
 	CanvasLastMousePos = position;
 	CanvasLastWorkablePos = position.subPos(CANVAS_WORKABLE_START_POS);
 }
 
-function isMouseInWorkableSpace()
+function isMouseInWorkableSpace():boolean
 {
 	if(CanvasLastWorkablePos.x < 0 || CanvasLastWorkablePos.y < 0)
 		return false;
@@ -676,7 +681,7 @@ function isMouseInWorkableSpace()
 	return true;
 }
 
-function onMouseDown()
+function onMouseDown():void
 {
 	if(isMouseInWorkableSpace())
 		MousePressedInWorkableArea = true;
@@ -687,29 +692,29 @@ function onMouseDown()
 	}
 }
 
-function onDblclick()
+function onDblclick():void
 {
 	if(isMouseInWorkableSpace())
 	{
 		PinPosition = CanvasLastWorkablePos.subPos(CanvasOffset).div(GRID_SPACING).mul(CHUNK_SIZE).floor();
-		(<HTMLInputElement>document.getElementById("xvalue")).value = PinPosition.x.toString();
-		(<HTMLInputElement>document.getElementById("zvalue")).value = PinPosition.y.toString();
+		getInputElementById("xvalue").value = PinPosition.x.toString();
+		getInputElementById("zvalue").value = PinPosition.y.toString();
 		drawCanvas();
 	}
 }
 
-function onMouseUp()
+function onMouseUp():void
 {
 	MousePressedInWorkableArea = false;
 	MousePressedOnZoomBar = false;
 }
 
-function clamp(value:number, min:number, max:number)
+function clamp(value:number, min:number, max:number):number
 {
 	return Math.max(Math.min(max, value), min);
 }
 
-function onMouseScroll(event:WheelEvent)
+function onMouseScroll(event:WheelEvent):void
 {
 	let newGridSpacing = GRID_SPACING;
 	newGridSpacing -= Math.sign(event.deltaY) * CANVAS_ZOOM_INCREMENT;
@@ -721,7 +726,7 @@ function onMouseScroll(event:WheelEvent)
 		changeGridSpacing(newGridSpacing, CANVAS_WORKABLE_SIZE.div(2));
 }
 
-function onCanvasMouseMove(position:Vector2)
+function onCanvasMouseMove(position:Vector2):void
 {	
 	if(MousePressedInWorkableArea)
 	{
@@ -734,6 +739,7 @@ function onCanvasMouseMove(position:Vector2)
 				drawCanvas();
 		}
 	}
+
 	if(MousePressedOnZoomBar)
 	{
 		changeZoomLevel();
@@ -743,16 +749,16 @@ function onCanvasMouseMove(position:Vector2)
 	drawPerMovementElements();
 }
 
-function changeZoomLevel()
+function changeZoomLevel():void
 {
 	let zoomPercentage = (CanvasLastMousePos.x - ZOOM_BAR_START_POS.x) / CANVAS_ZOOM_BAR_SIZE.x;
 	zoomPercentage = clamp(zoomPercentage, 0, 1);
 	
 	let interval = CANVAS_MAX_ZOOM_LEVEL - CANVAS_MIN_ZOOM_LEVEL;
-	changeGridSpacing(zoomPercentage * interval + CANVAS_MIN_ZOOM_LEVEL, CANVAS_WORKABLE_SIZE.div(2)); //CANVAS_WORKABLE_SIZE.x/2, CANVAS_WORKABLE_SIZE.y/2);
+	changeGridSpacing(zoomPercentage * interval + CANVAS_MIN_ZOOM_LEVEL, CANVAS_WORKABLE_SIZE.div(2));
 }
 
-function changeGridSpacing(newGridSpacing:number, referencePos:Vector2)
+function changeGridSpacing(newGridSpacing:number, referencePos:Vector2):void
 {
 	let originalDistance = referencePos.subPos(CanvasOffset);
 	let calc = originalDistance.div(GRID_SPACING).mul(newGridSpacing).subPos(originalDistance);
@@ -762,7 +768,7 @@ function changeGridSpacing(newGridSpacing:number, referencePos:Vector2)
 	drawCanvas();
 }
 
-function mouseOverZoomBar()
+function mouseOverZoomBar():boolean
 {
 	if(CanvasLastMousePos.x < ZOOM_BAR_START_POS.x - ZOOM_BAR_PADDING.x)
 		return false;
@@ -779,7 +785,7 @@ function mouseOverZoomBar()
 	return true;
 }
 
-function drawPerMovementElements()
+function drawPerMovementElements():void
 {
 	drawFullBackground();
 	drawCoordinates();
@@ -787,7 +793,7 @@ function drawPerMovementElements()
 	drawZoomBar();
 }
 
-function drawZoomBar()
+function drawZoomBar():void
 {	
 	let ctx = getCanvasContext();
 	ctx.fillStyle = ZOOM_BAR_COLOR;
@@ -813,7 +819,7 @@ function drawZoomBar()
 	ctx.stroke();
 }
 
-function addCanvasEventListeners()
+function addCanvasEventListeners():void
 {
 	let canvas = document.getElementById("myCanvas");
 	
@@ -847,7 +853,7 @@ function addCanvasEventListeners()
 	}, false);
 }
 
-function onWindowResize(init:boolean)
+function onWindowResize(init:boolean):void
 {
 	CANVAS_TOTAL_SIZE.x = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth) - PAGE_PADDING_SIDES * 2;
 	CANVAS_TOTAL_SIZE.x = clamp(CANVAS_TOTAL_SIZE.x, CANVAS_MIN_WIDTH, CANVAS_MAX_WIDTH);
@@ -879,7 +885,7 @@ function onWindowResize(init:boolean)
 	updateSearchResults();
 }
 
-function drawFullBackground()
+function drawFullBackground():void
 {
 	let ctx = getCanvasContext();
 	ctx.fillStyle = CANVAS_BACKGROUND;
@@ -889,7 +895,7 @@ function drawFullBackground()
 	ctx.fillRect(0, CANVAS_TOTAL_SIZE.y - CANVAS_PADDING_BOTTOM, CANVAS_TOTAL_SIZE.x, CANVAS_PADDING_BOTTOM - SLIMY[0].length * SLIMY_PIXEL_SIZE);
 }
 
-function drawCoordinates()
+function drawCoordinates():void
 {
 	let minPos = CanvasOffset.div(-GRID_SPACING).ceil().add(1);
 	let maxPos = CanvasOffset.mul(-1).addPos(CANVAS_WORKABLE_SIZE).div(GRID_SPACING);
@@ -925,7 +931,7 @@ function drawCoordinates()
 	}
 }
 
-function drawMouseCoordinates()
+function drawMouseCoordinates():void
 {
 	if (!isMouseInWorkableSpace())
 		return;
@@ -945,14 +951,14 @@ function drawMouseCoordinates()
 	ctx.fillText("Chunk: X(" + Math.floor(position.x/CHUNK_SIZE) + ") Z("+ Math.floor(position.y/CHUNK_SIZE) + ")", drawPosX + CANVAS_WORKABLE_SIZE.x, drawPosY);
 }
 
-function drawWorkableBackground()
+function drawWorkableBackground():void
 {
 	let ctx = getCanvasContext();
 	ctx.fillStyle = WORKABLE_BACKGROUND;
 	ctx.fillRect(CANVAS_WORKABLE_START_POS.x, CANVAS_WORKABLE_START_POS.y, CANVAS_WORKABLE_SIZE.x, CANVAS_WORKABLE_SIZE.y);
 }
 
-function updateSearchResults()
+function updateSearchResults():void
 {
 	if(!ShouldUpdateSearchResults)
 		return;
@@ -995,7 +1001,7 @@ function updateSearchResults()
 		document.getElementById("resultsFoundValue").innerHTML = ResultsArray.length.toString();
 }
 
-function nextPage()
+function nextPage():void
 {
 	CurrentPage++;
 
@@ -1003,7 +1009,7 @@ function nextPage()
 	updateSearchResults()
 }
 
-function previousPage()
+function previousPage():void
 {
 	CurrentPage--;
 
@@ -1011,15 +1017,15 @@ function previousPage()
 	updateSearchResults()
 }
 
-function goToResult(index:number)
+function goToResult(index:number):void
 {
 	let center = ResultsArray[index].getCenter();
-	(<HTMLInputElement>document.getElementById("xvalue")).value = center.x.toString();
-	(<HTMLInputElement>document.getElementById("zvalue")).value = center.y.toString();
+	getInputElementById("xvalue").value = center.x.toString();
+	getInputElementById("zvalue").value = center.y.toString();
 	goToPosition();
 }
 
-function checkForClusters(chunksArray:boolean[][])
+function checkForClusters(chunksArray:boolean[][]):void
 {
 	for(let i = 0; i < KhaloophSearchMin; ++i)
 	{
@@ -1031,12 +1037,12 @@ function checkForClusters(chunksArray:boolean[][])
 	}
 }
 
-function checkClusterFromPosition(position:Vector2, chunksArray:boolean[][])
+function checkClusterFromPosition(position:Vector2, chunksArray:boolean[][]):boolean
 {
 	return checkClusterWidthHeight(position, chunksArray) || (ClusterSize.x != ClusterSize.y && checkClusterHeightWidth(position, chunksArray));
 }
 
-function checkClusterWidthHeight(position:Vector2, chunksArray:boolean[][])
+function checkClusterWidthHeight(position:Vector2, chunksArray:boolean[][]):boolean
 {
 	let xSearchHeight = position.x + ClusterSize.y;
 	let ySearchWidth = position.y + ClusterSize.x;
@@ -1065,7 +1071,7 @@ function checkClusterWidthHeight(position:Vector2, chunksArray:boolean[][])
 	return true;
 }
 
-function checkClusterHeightWidth(position:Vector2, chunksArray:boolean[][])
+function checkClusterHeightWidth(position:Vector2, chunksArray:boolean[][]):boolean
 {
 	let xSearchWidth = position.x + ClusterSize.x;
 	let ySearchHeight = position.y + ClusterSize.y;
@@ -1094,13 +1100,13 @@ function checkClusterHeightWidth(position:Vector2, chunksArray:boolean[][])
 	return true;
 }
 
-function addSearchResult(cluster:Cluster)
+function addSearchResult(cluster:Cluster):void
 {
 	cluster.setDistance(cluster.getCenter().distance(SearchOrigin));	
 	TempResults.push(cluster);
 }
 
-function addPendingResults()
+function addPendingResults():void
 {
 	if(TempResults.length)
 	{
@@ -1121,7 +1127,7 @@ function addPendingResults()
 	}
 }
 
-function getClusterFromChunksList(chunks:Vector2[])
+function getClusterFromChunksList(chunks:Vector2[]):Cluster
 {	
 	let minPos = new Vector2(0, 0);
 	let maxPos = new Vector2(0, 0);
@@ -1146,7 +1152,7 @@ function getClusterFromChunksList(chunks:Vector2[])
 	return new Cluster(minPos, maxPos);
 }
 
-function processCurrentKhalooph()
+function processCurrentKhalooph():void
 {
 	if (Math.abs(CurrentKhalooph.start.x) + Math.abs(CurrentKhalooph.end.x) > (SearchDistance / CHUNK_SIZE)
 	|| Math.abs(CurrentKhalooph.start.y) + Math.abs(CurrentKhalooph.end.y) > (SearchDistance / CHUNK_SIZE)
@@ -1191,14 +1197,14 @@ function processCurrentKhalooph()
 	setTimeout(processCurrentKhalooph, 0);
 }
 
-function setInitialKhalooph(startPosition:Vector2)
+function setInitialKhalooph(startPosition:Vector2):void
 {
 	let khaloophSize = getKhaloophSize();
 	CurrentKhalooph.start = startPosition.sub(Math.floor(khaloophSize / 2));
 	CurrentKhalooph.end = CurrentKhalooph.start.add(khaloophSize);
 }
 
-function setNextKhalooph()
+function setNextKhalooph():void
 {
 	let khaloophSize = getKhaloophSize();
 	CurrentKhalooph.start = CurrentKhalooph.start.addPos(CurrentDirection.direction.mul(khaloophSize - ClusterSizeOverlap));
@@ -1217,7 +1223,7 @@ function setNextKhalooph()
 	}
 }
 
-function resetValues()
+function resetValues():void
 {
 	CurrentDirection = new Direction();
 	CurrentKhaloophsSideDistance = 1;
@@ -1237,7 +1243,7 @@ function resetValues()
 	drawCanvas();
 }
 
-function searchButtonPressed()
+function searchButtonPressed():void
 {
 	if(SearchInProgress)
 		StopSearchRequested = true;
@@ -1245,7 +1251,7 @@ function searchButtonPressed()
 		startSearch();
 }
 
-function startSearch()
+function startSearch():void
 {
 	resetValues();
 	SearchInProgress = true;
@@ -1255,18 +1261,18 @@ function startSearch()
 	document.getElementById("resultsFoundValue").innerHTML = `0`;
 	document.getElementById("chunksCheckedValue").innerHTML = `0`;
 	
-	ClusterSize.x = parseInt((<HTMLInputElement>document.getElementById("xcluster")).value);
-	ClusterSize.y = parseInt((<HTMLInputElement>document.getElementById("ycluster")).value);
+	ClusterSize.x = parseInt(getInputElementById("xcluster").value);
+	ClusterSize.y = parseInt(getInputElementById("ycluster").value);
 	ClusterSize = ClusterSize.clamp(1, 100);
-	(<HTMLInputElement>document.getElementById("xcluster")).value = ClusterSize.x.toString();
-	(<HTMLInputElement>document.getElementById("ycluster")).value = ClusterSize.y.toString();
+	getInputElementById("xcluster").value = ClusterSize.x.toString();
+	getInputElementById("ycluster").value = ClusterSize.y.toString();
 	
-	SearchResultLimit = parseInt((<HTMLInputElement>document.getElementById("searchlimit")).value);
+	SearchResultLimit = parseInt(getInputElementById("searchlimit").value);
 	SearchResultLimit = Math.min(1000, SearchResultLimit);
-	(<HTMLInputElement>document.getElementById("searchlimit")).value = SearchResultLimit.toString();
+	getInputElementById("searchlimit").value = SearchResultLimit.toString();
 	
-	SearchDistance = parseInt((<HTMLInputElement>document.getElementById("searchdistance")).value);
-	ReverseSearch = (<HTMLInputElement>document.getElementById("reverseSearch")).checked;
+	SearchDistance = parseInt(getInputElementById("searchdistance").value);
+	ReverseSearch = getInputElementById("reverseSearch").checked;
 
 	let clusterSizeMin = Math.min(ClusterSize.x, ClusterSize.y);
 	let clusterSizeMax = Math.max(ClusterSize.x, ClusterSize.y);
@@ -1289,7 +1295,7 @@ function startSearch()
 	UpdateSearchStatsIntervalId = setInterval(updateSearchInfo, 0);
 }
 
-function updateSearchInfo()
+function updateSearchInfo():void
 {
 	if(ShouldStopSearchTimer)
 	{
@@ -1309,7 +1315,7 @@ function updateSearchInfo()
 	}
 }
 
-function updateTimeElapsed()
+function updateTimeElapsed():void
 {
 	let timeElapsed = LastUpdateTimestamp - StartSearchTimestamp;
 	let hours = Math.floor(timeElapsed / 3600);
@@ -1326,7 +1332,7 @@ function updateTimeElapsed()
 	document.getElementById("searchInProgress").innerHTML = searchInProgressText;
 }
 
-function onSearchStopped()
+function onSearchStopped():void
 {	
 	ResultsArray.length = Math.min(SearchResultLimit, ResultsArray.length);
 	ShouldUpdateSearchResults = true;
@@ -1343,7 +1349,7 @@ function onSearchStopped()
 	ShouldStopSearchTimer = true;
 }
 
-function updateInputs()
+function updateInputs():void
 {
 	let searchButton = document.getElementById("searchButton") as HTMLInputElement;
 	let searchInputs = [];
@@ -1380,20 +1386,20 @@ function updateInputs()
 	onInputChanged();
 }
 
-function setRandomSeed()
+function setRandomSeed():void
 {
-	(<HTMLInputElement>document.getElementById("seed")).value = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString();
+	getInputElementById("seed").value = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString();
 	onSeedChanged();
 }
 
-function onInputChanged()
+function onInputChanged():void
 {
-	localStorage.setItem("seed", (<HTMLInputElement>document.getElementById("seed")).value);
-	localStorage.setItem("xcluster", (<HTMLInputElement>document.getElementById("xcluster")).value);
-	localStorage.setItem("ycluster", (<HTMLInputElement>document.getElementById("ycluster")).value);
-	localStorage.setItem("searchdistance", (<HTMLInputElement>document.getElementById("searchdistance")).value);
-	localStorage.setItem("searchlimit", (<HTMLInputElement>document.getElementById("searchlimit")).value);
-	localStorage.setItem("invertedsearch", (<HTMLInputElement>document.getElementById("reverseSearch")).checked.toString());
+	localStorage.setItem("seed", getInputElementById("seed").value);
+	localStorage.setItem("xcluster", getInputElementById("xcluster").value);
+	localStorage.setItem("ycluster", getInputElementById("ycluster").value);
+	localStorage.setItem("searchdistance", getInputElementById("searchdistance").value);
+	localStorage.setItem("searchlimit", getInputElementById("searchlimit").value);
+	localStorage.setItem("invertedsearch", getInputElementById("reverseSearch").checked.toString());
 	localStorage.setItem("isBedrock", IsBedrock.toString());
 }
 
@@ -1415,7 +1421,7 @@ String.prototype.hashCode = function()
 	return hash;
 };
 
-function switchToJava()
+function switchToJava():void
 {
 	if(SearchInProgress)
 		return;
@@ -1432,7 +1438,7 @@ function switchToJava()
 	onInputChanged();
 }
 
-function switchToBedrock()
+function switchToBedrock():void
 {
 	if(SearchInProgress)
 		return;
@@ -1449,7 +1455,7 @@ function switchToBedrock()
 	onInputChanged();
 }
 
-function drawSlimy()
+function drawSlimy():void
 {	
 	let ctx = getCanvasContext();
 	let currentFrame = getNextFrame();

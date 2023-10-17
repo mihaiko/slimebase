@@ -23,7 +23,7 @@ var TEXT_OFFSET = 0;
 
 function getTitleContext()
 {
-	return document.getElementById("myTitle").getContext("2d");
+	return  (<HTMLCanvasElement>document.getElementById("myTitle")).getContext("2d");
 }
 
 function createTitle()

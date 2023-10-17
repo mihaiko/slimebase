@@ -1,35 +1,37 @@
 "use strict";
-var MersenneChopped = function () {
-    this.mt = new Uint32Array(624);
-    this.mti = 625;
-    this.mag01 = new Uint32Array([0x0, 0x9908b0df]);
-};
-MersenneChopped.prototype.random_int = function (s) {
-    this.mt[0] = s >>> 0;
-    for (this.mti = 1; this.mti < 624; this.mti++) {
-        var s = this.mt[this.mti - 1] ^ (this.mt[this.mti - 1] >>> 30);
-        this.mt[this.mti] = (((((s & 0xffff0000) >>> 16) * 1812433253) << 16) + (s & 0x0000ffff) * 1812433253) + this.mti;
-        this.mt[this.mti] >>>= 0;
+class MersenneChopped {
+    constructor() {
+        this.mt = new Uint32Array(624);
+        this.mti = 625;
+        this.mag01 = new Uint32Array([0x0, 0x9908b0df]);
     }
-    var y;
-    var kk;
-    for (kk = 0; kk < 227; kk++) {
-        y = (this.mt[kk] & 0x80000000) | (this.mt[kk + 1] & 0x7fffffff);
-        this.mt[kk] = this.mt[kk + 397] ^ (y >>> 1) ^ this.mag01[y & 0x1];
+    random_int(seed) {
+        this.mt[0] = seed >>> 0;
+        for (this.mti = 1; this.mti < 624; this.mti++) {
+            var s = this.mt[this.mti - 1] ^ (this.mt[this.mti - 1] >>> 30);
+            this.mt[this.mti] = (((((s & 0xffff0000) >>> 16) * 1812433253) << 16) + (s & 0x0000ffff) * 1812433253) + this.mti;
+            this.mt[this.mti] >>>= 0;
+        }
+        var y;
+        var kk;
+        for (kk = 0; kk < 227; kk++) {
+            y = (this.mt[kk] & 0x80000000) | (this.mt[kk + 1] & 0x7fffffff);
+            this.mt[kk] = this.mt[kk + 397] ^ (y >>> 1) ^ this.mag01[y & 0x1];
+        }
+        for (; kk < 623; kk++) {
+            y = (this.mt[kk] & 0x80000000) | (this.mt[kk + 1] & 0x7fffffff);
+            this.mt[kk] = this.mt[kk - 227] ^ (y >>> 1) ^ this.mag01[y & 0x1];
+        }
+        y = (this.mt[623] & 0x80000000) | (this.mt[0] & 0x7fffffff);
+        this.mt[623] = this.mt[396] ^ (y >>> 1) ^ this.mag01[y & 0x1];
+        y = this.mt[0];
+        y ^= (y >>> 11);
+        y ^= (y << 7) & 0x9d2c5680;
+        y ^= (y << 15) & 0xefc60000;
+        y ^= (y >>> 18);
+        return y >>> 0;
     }
-    for (; kk < 623; kk++) {
-        y = (this.mt[kk] & 0x80000000) | (this.mt[kk + 1] & 0x7fffffff);
-        this.mt[kk] = this.mt[kk - 227] ^ (y >>> 1) ^ this.mag01[y & 0x1];
-    }
-    y = (this.mt[623] & 0x80000000) | (this.mt[0] & 0x7fffffff);
-    this.mt[623] = this.mt[396] ^ (y >>> 1) ^ this.mag01[y & 0x1];
-    y = this.mt[0];
-    y ^= (y >>> 11);
-    y ^= (y << 7) & 0x9d2c5680;
-    y ^= (y << 15) & 0xefc60000;
-    y ^= (y >>> 18);
-    return y >>> 0;
-};
+}
 function umul32_lo(a, b) {
     let a00 = a & 0xFFFF;
     let a16 = a >>> 16;
@@ -139,7 +141,7 @@ class Cluster {
     }
     equals(other) { return this.topLeft == other.topLeft && this.bottomRight == other.bottomRight; }
     setDistance(distance) { this.distanceFromOrigin = distance; }
-    getCenter() { return this.center; }
+    getCenter() { return this.center.copy(); }
 }
 class OOSResult {
     constructor(oos, direction, position) {
@@ -281,18 +283,21 @@ function isSlimeChunk(seed, x, z) {
     let rngGen = new Random(seed + BigInt(Math.imul(Math.imul(x, x), 4987142)) + BigInt(Math.imul(x, 5947611)) + BigInt(Math.imul(z, z)) * 4392871n + BigInt(Math.imul(z, 389711)) ^ 987234911n);
     return rngGen.nextInt();
 }
+function getInputElementById(id) {
+    return document.getElementById(id);
+}
 function goToPosition() {
-    PinPosition.x = parseFloat(document.getElementById("xvalue").value);
-    PinPosition.y = parseFloat(document.getElementById("zvalue").value);
+    PinPosition.x = parseFloat(getInputElementById("xvalue").value);
+    PinPosition.y = parseFloat(getInputElementById("zvalue").value);
     CanvasOffset = PinPosition.div(CHUNK_SIZE).mul(GRID_SPACING).subPos(CANVAS_WORKABLE_SIZE.div(2)).mul(-1);
     drawCanvas();
 }
 function createCanvas() {
     try {
-        Seed = BigInt(document.getElementById("seed").value);
+        Seed = BigInt(getInputElementById("seed").value);
     }
     catch {
-        Seed = BigInt(document.getElementById("seed").value.hashCode());
+        Seed = BigInt(getInputElementById("seed").value.hashCode());
     }
     onWindowResize(true);
     window.addEventListener('resize', function (event) {
@@ -323,24 +328,24 @@ function setInputs() {
     else
         setRandomSeed();
     if (xcluster)
-        document.getElementById("xcluster").value = xcluster;
+        getInputElementById("xcluster").value = xcluster;
     if (ycluster)
-        document.getElementById("ycluster").value = ycluster;
+        getInputElementById("ycluster").value = ycluster;
     if (searchdistance)
-        document.getElementById("searchdistance").value = searchdistance;
+        getInputElementById("searchdistance").value = searchdistance;
     if (searchlimit)
-        document.getElementById("searchlimit").value = searchlimit;
+        getInputElementById("searchlimit").value = searchlimit;
     if (invertedsearch)
-        document.getElementById("reverseSearch").checked = invertedsearch == "true";
+        getInputElementById("reverseSearch").checked = invertedsearch == "true";
     if (isBedrock == "true")
         switchToBedrock();
 }
 function onSeedChanged() {
     try {
-        Seed = BigInt(document.getElementById("seed").value);
+        Seed = BigInt(getInputElementById("seed").value);
     }
     catch {
-        Seed = BigInt(document.getElementById("seed").value.hashCode());
+        Seed = BigInt(getInputElementById("seed").value.hashCode());
     }
     resetValues();
     onInputChanged();
@@ -653,8 +658,8 @@ function onMouseDown() {
 function onDblclick() {
     if (isMouseInWorkableSpace()) {
         PinPosition = CanvasLastWorkablePos.subPos(CanvasOffset).div(GRID_SPACING).mul(CHUNK_SIZE).floor();
-        document.getElementById("xvalue").value = PinPosition.x.toString();
-        document.getElementById("zvalue").value = PinPosition.y.toString();
+        getInputElementById("xvalue").value = PinPosition.x.toString();
+        getInputElementById("zvalue").value = PinPosition.y.toString();
         drawCanvas();
     }
 }
@@ -693,7 +698,7 @@ function changeZoomLevel() {
     let zoomPercentage = (CanvasLastMousePos.x - ZOOM_BAR_START_POS.x) / CANVAS_ZOOM_BAR_SIZE.x;
     zoomPercentage = clamp(zoomPercentage, 0, 1);
     let interval = CANVAS_MAX_ZOOM_LEVEL - CANVAS_MIN_ZOOM_LEVEL;
-    changeGridSpacing(zoomPercentage * interval + CANVAS_MIN_ZOOM_LEVEL, CANVAS_WORKABLE_SIZE.div(2)); //CANVAS_WORKABLE_SIZE.x/2, CANVAS_WORKABLE_SIZE.y/2);
+    changeGridSpacing(zoomPercentage * interval + CANVAS_MIN_ZOOM_LEVEL, CANVAS_WORKABLE_SIZE.div(2));
 }
 function changeGridSpacing(newGridSpacing, referencePos) {
     let originalDistance = referencePos.subPos(CanvasOffset);
@@ -880,8 +885,8 @@ function previousPage() {
 }
 function goToResult(index) {
     let center = ResultsArray[index].getCenter();
-    document.getElementById("xvalue").value = center.x.toString();
-    document.getElementById("zvalue").value = center.y.toString();
+    getInputElementById("xvalue").value = center.x.toString();
+    getInputElementById("zvalue").value = center.y.toString();
     goToPosition();
 }
 function checkForClusters(chunksArray) {
@@ -1049,16 +1054,16 @@ function startSearch() {
     document.getElementById("searchInProgress").innerHTML = "Search in progress...";
     document.getElementById("resultsFoundValue").innerHTML = `0`;
     document.getElementById("chunksCheckedValue").innerHTML = `0`;
-    ClusterSize.x = parseInt(document.getElementById("xcluster").value);
-    ClusterSize.y = parseInt(document.getElementById("ycluster").value);
+    ClusterSize.x = parseInt(getInputElementById("xcluster").value);
+    ClusterSize.y = parseInt(getInputElementById("ycluster").value);
     ClusterSize = ClusterSize.clamp(1, 100);
-    document.getElementById("xcluster").value = ClusterSize.x.toString();
-    document.getElementById("ycluster").value = ClusterSize.y.toString();
-    SearchResultLimit = parseInt(document.getElementById("searchlimit").value);
+    getInputElementById("xcluster").value = ClusterSize.x.toString();
+    getInputElementById("ycluster").value = ClusterSize.y.toString();
+    SearchResultLimit = parseInt(getInputElementById("searchlimit").value);
     SearchResultLimit = Math.min(1000, SearchResultLimit);
-    document.getElementById("searchlimit").value = SearchResultLimit.toString();
-    SearchDistance = parseInt(document.getElementById("searchdistance").value);
-    ReverseSearch = document.getElementById("reverseSearch").checked;
+    getInputElementById("searchlimit").value = SearchResultLimit.toString();
+    SearchDistance = parseInt(getInputElementById("searchdistance").value);
+    ReverseSearch = getInputElementById("reverseSearch").checked;
     let clusterSizeMin = Math.min(ClusterSize.x, ClusterSize.y);
     let clusterSizeMax = Math.max(ClusterSize.x, ClusterSize.y);
     ClusterSizeOverlap = clusterSizeMax - 1;
@@ -1142,16 +1147,16 @@ function updateInputs() {
     onInputChanged();
 }
 function setRandomSeed() {
-    document.getElementById("seed").value = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString();
+    getInputElementById("seed").value = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString();
     onSeedChanged();
 }
 function onInputChanged() {
-    localStorage.setItem("seed", document.getElementById("seed").value);
-    localStorage.setItem("xcluster", document.getElementById("xcluster").value);
-    localStorage.setItem("ycluster", document.getElementById("ycluster").value);
-    localStorage.setItem("searchdistance", document.getElementById("searchdistance").value);
-    localStorage.setItem("searchlimit", document.getElementById("searchlimit").value);
-    localStorage.setItem("invertedsearch", document.getElementById("reverseSearch").checked.toString());
+    localStorage.setItem("seed", getInputElementById("seed").value);
+    localStorage.setItem("xcluster", getInputElementById("xcluster").value);
+    localStorage.setItem("ycluster", getInputElementById("ycluster").value);
+    localStorage.setItem("searchdistance", getInputElementById("searchdistance").value);
+    localStorage.setItem("searchlimit", getInputElementById("searchlimit").value);
+    localStorage.setItem("invertedsearch", getInputElementById("reverseSearch").checked.toString());
     localStorage.setItem("isBedrock", IsBedrock.toString());
 }
 String.prototype.hashCode = function () {

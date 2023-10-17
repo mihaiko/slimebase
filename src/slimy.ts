@@ -67,7 +67,7 @@ var CurrentFrame = 0;
 
 function getAnimColor()
 {
-	return SLIMY_COLORS[Math.abs(Math.floor(Math.random()*SLIMY_COLORS.length)) % SLIMY_COLORS.length];
+	return SLIMY_COLORS[Math.abs(Math.floor(Math.random() * SLIMY_COLORS.length)) % SLIMY_COLORS.length];
 }
 
 function getNextFrame()
