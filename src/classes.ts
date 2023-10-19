@@ -9,6 +9,7 @@ class Vector2
 	mul(value:number):Vector2 { return new Vector2(this.x * value, this.y * value); }
 	div(value:number):Vector2 { return new Vector2(this.x / value, this.y / value); }
 	mod(value:number):Vector2 { return new Vector2(this.x % value, this.y % value); }
+	abs():Vector2 { return new Vector2(Math.abs(this.x), Math.abs(this.y)); }
 	floor():Vector2 { return new Vector2(Math.floor(this.x), Math.floor(this.y)); }
 	ceil():Vector2 { return new Vector2(Math.ceil(this.x), Math.ceil(this.y)); }
 	round():Vector2 { return new Vector2(Math.round(this.x), Math.round(this.y)); }

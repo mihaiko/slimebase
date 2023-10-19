@@ -134,8 +134,8 @@ var IsBedrock = false;
 
 var CachedCanvasContext:CanvasRenderingContext2D;
 
-const USE_CACHE = false;
-const DO_CACHE_CHECKS = USE_CACHE && true;
+const USE_CACHE = true;
+const DO_CACHE_CHECKS = USE_CACHE && false;
 
 var SlimeChunksCache = new ChunksCache(new Vector2(0, 0), new Vector2(0, 0));
 
@@ -227,7 +227,7 @@ function setInputs():void
 	if(seed)
 	{		
 		try{
-			Seed = BigInt(parseInt(seed));
+			Seed = BigInt(seed);
 		}
 		catch{
 			Seed = BigInt(seed.hashCode());
@@ -546,16 +546,22 @@ function drawGrid():void
 function drawSlimeChunks():void
 {
 	let minPos = CanvasOffset.mul(-1).div(GRID_SPACING).floor();	
-	let maxPos = minPos.addPos(CANVAS_WORKABLE_SIZE.div(GRID_SPACING).floor().add(1));
+	let maxPos = minPos.addPos(CANVAS_WORKABLE_SIZE.div(GRID_SPACING).floor().add(5));
 
-	SlimeChunksCache.moveTo(minPos, maxPos);
+	if(USE_CACHE)
+		SlimeChunksCache.moveTo(minPos, maxPos);
 
 	for(let i = minPos.x; i <= maxPos.x; ++i)
 	{
 		for(let j = minPos.y; j <= maxPos.y; ++j)
 		{
 			if(DO_CACHE_CHECKS && SlimeChunksCache.isSlimeChunk(i,j) != isSlimeChunk(i, j))
-				console.log("error in cache");
+			{
+				console.log("error in cache "+  i + " " + j);
+				//console.log("error in cache");
+				drawCacheError(new Vector2(i, j));
+			}
+
 
 			if(USE_CACHE)
 			{
@@ -680,6 +686,12 @@ function drawSlimeChunk(pos:Vector2):void
 {
 	drawRect(pos.mul(GRID_SPACING), new Vector2(GRID_SPACING, GRID_SPACING), INNER_SLIME_CHUNK_COLOR, true, 0.5);
 	drawRect(pos.mul(GRID_SPACING), new Vector2(GRID_SPACING, GRID_SPACING), SLIME_CHUNK_BORDER_COLOR, false, 0.5);
+}
+
+function drawCacheError(pos:Vector2):void
+{
+	drawRect(pos.mul(GRID_SPACING), new Vector2(GRID_SPACING, GRID_SPACING), "red", true, 3);
+	drawRect(pos.mul(GRID_SPACING), new Vector2(GRID_SPACING, GRID_SPACING), "red", false, 3);
 }
 
 function getCanvasContext()

@@ -46,26 +46,6 @@ function umul32_lo(a, b) {
     let hi = c16 & 0xFFFF;
     return ((hi << 16) | lo) >>> 0;
 }
-function umul32_hi(a, b) {
-    let a00 = a & 0xFFFF;
-    let a16 = a >>> 16;
-    let b00 = b & 0xFFFF;
-    let b16 = b >>> 16;
-    let c00 = a00 * b00;
-    let c16 = c00 >>> 16;
-    c16 += a00 * b16;
-    let c32 = c16 >>> 16;
-    c16 &= 0xFFFF;
-    c16 += a16 * b00;
-    c32 += c16 >>> 16;
-    let c48 = c32 >>> 16;
-    c32 &= 0xFFFF;
-    c32 += a16 * b16;
-    c48 += c32 >>> 16;
-    let lo = c32 & 0xFFFF;
-    let hi = c48 & 0xFFFF;
-    return ((hi << 16) | lo) >>> 0;
-}
 var mt = new MersenneChopped();
 function isSlimeChunkBedrock(x, y) {
     let x_uint = x >>> 0;
@@ -87,6 +67,7 @@ class ChunksCache {
         this.recompute();
     }
     recompute() {
+        this.head = new Vector2(0, 0);
         this.matrix.length = 0;
         for (let i = this.reference.y; i < this.reference.y + this.size.y; ++i) {
             let row = [];
@@ -112,25 +93,30 @@ class ChunksCache {
         let offset = newReferencePos.subPos(this.reference);
         if (offset.isZero())
             return;
+        let absOffset = offset.abs();
         this.reference = newReferencePos;
         this.head = this.head.addPos(offset).modPos(this.size);
+        if (absOffset.x > this.size.x / 2 || absOffset.y > this.size.y / 2) {
+            this.recompute();
+            return;
+        }
         let offsetToCheck = offset.mul(-1);
         for (let i = 0; i < this.size.x; ++i) {
             let xIndex = (i + this.head.x) % this.size.x;
-            //let xInNoChangeZone:boolean = true;
-            //if(offsetToCheck.x > 0 && i > this.size.x - offsetToCheck.x)
-            //    xInNoChangeZone = false;
-            //else if (offsetToCheck.x < 0 && i < offset.x)
-            //    xInNoChangeZone = false;
+            let xInNoChangeZone = true;
+            if (offsetToCheck.x > 0 && i < this.size.x - offsetToCheck.x)
+                xInNoChangeZone = false;
+            else if (offsetToCheck.x < 0 && i > offset.x)
+                xInNoChangeZone = false;
             for (let j = 0; j < this.size.y; ++j) {
                 let yIndex = (j + this.head.y) % this.size.y;
-                //let yInNoChangeZone:boolean = true;
-                //if(offsetToCheck.y > 0 && j > this.size.y - offsetToCheck.y)
-                //    yInNoChangeZone = false;
-                //else if (offsetToCheck.y < 0 && j < offset.y)
-                //    yInNoChangeZone = false;
-                //if(xInNoChangeZone && yInNoChangeZone)
-                //continue;
+                let yInNoChangeZone = true;
+                if (offsetToCheck.y > 0 && j < this.size.y - offsetToCheck.y)
+                    yInNoChangeZone = false;
+                else if (offsetToCheck.y < 0 && j > offset.y)
+                    yInNoChangeZone = false;
+                if (xInNoChangeZone && yInNoChangeZone)
+                    continue;
                 let point = (new Vector2(xIndex, yIndex)).subPos(this.head).modPos(this.size);
                 this.matrix[yIndex][xIndex] = isSlimeChunk(point.x + this.reference.x, point.y + this.reference.y);
             }
@@ -148,6 +134,7 @@ class Vector2 {
     mul(value) { return new Vector2(this.x * value, this.y * value); }
     div(value) { return new Vector2(this.x / value, this.y / value); }
     mod(value) { return new Vector2(this.x % value, this.y % value); }
+    abs() { return new Vector2(Math.abs(this.x), Math.abs(this.y)); }
     floor() { return new Vector2(Math.floor(this.x), Math.floor(this.y)); }
     ceil() { return new Vector2(Math.ceil(this.x), Math.ceil(this.y)); }
     round() { return new Vector2(Math.round(this.x), Math.round(this.y)); }
@@ -327,8 +314,8 @@ var UpdateSearchStatsIntervalId = 0;
 var CurrentChunksChecked = 0;
 var IsBedrock = false;
 var CachedCanvasContext;
-const USE_CACHE = false;
-const DO_CACHE_CHECKS = USE_CACHE && true;
+const USE_CACHE = true;
+const DO_CACHE_CHECKS = USE_CACHE && false;
 var SlimeChunksCache = new ChunksCache(new Vector2(0, 0), new Vector2(0, 0));
 class Random {
     constructor(seed) {
@@ -389,7 +376,7 @@ function setInputs() {
     let isBedrock = localStorage.getItem("isBedrock");
     if (seed) {
         try {
-            Seed = BigInt(parseInt(seed));
+            Seed = BigInt(seed);
         }
         catch {
             Seed = BigInt(seed.hashCode());
@@ -622,12 +609,16 @@ function drawGrid() {
 }
 function drawSlimeChunks() {
     let minPos = CanvasOffset.mul(-1).div(GRID_SPACING).floor();
-    let maxPos = minPos.addPos(CANVAS_WORKABLE_SIZE.div(GRID_SPACING).floor().add(1));
-    SlimeChunksCache.moveTo(minPos, maxPos);
+    let maxPos = minPos.addPos(CANVAS_WORKABLE_SIZE.div(GRID_SPACING).floor().add(5));
+    if (USE_CACHE)
+        SlimeChunksCache.moveTo(minPos, maxPos);
     for (let i = minPos.x; i <= maxPos.x; ++i) {
         for (let j = minPos.y; j <= maxPos.y; ++j) {
-            if (DO_CACHE_CHECKS && SlimeChunksCache.isSlimeChunk(i, j) != isSlimeChunk(i, j))
-                console.log("error in cache");
+            if (DO_CACHE_CHECKS && SlimeChunksCache.isSlimeChunk(i, j) != isSlimeChunk(i, j)) {
+                console.log("error in cache " + i + " " + j);
+                //console.log("error in cache");
+                drawCacheError(new Vector2(i, j));
+            }
             if (USE_CACHE) {
                 if (SlimeChunksCache.isSlimeChunk(i, j))
                     drawSlimeChunk(new Vector2(i, j));
@@ -714,6 +705,10 @@ function drawLine(startPos, endPos, color, width) {
 function drawSlimeChunk(pos) {
     drawRect(pos.mul(GRID_SPACING), new Vector2(GRID_SPACING, GRID_SPACING), INNER_SLIME_CHUNK_COLOR, true, 0.5);
     drawRect(pos.mul(GRID_SPACING), new Vector2(GRID_SPACING, GRID_SPACING), SLIME_CHUNK_BORDER_COLOR, false, 0.5);
+}
+function drawCacheError(pos) {
+    drawRect(pos.mul(GRID_SPACING), new Vector2(GRID_SPACING, GRID_SPACING), "red", true, 3);
+    drawRect(pos.mul(GRID_SPACING), new Vector2(GRID_SPACING, GRID_SPACING), "red", false, 3);
 }
 function getCanvasContext() {
     return CachedCanvasContext;

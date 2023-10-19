@@ -23,6 +23,7 @@ class ChunksCache
 
     recompute()
     {
+        this.head = new Vector2(0, 0);
         this.matrix.length = 0;
         for(let i = this.reference.y; i < this.reference.y + this.size.y; ++i)
         {
@@ -59,8 +60,16 @@ class ChunksCache
         if(offset.isZero())
             return;
 
+        let absOffset = offset.abs();
+
         this.reference = newReferencePos;
         this.head = this.head.addPos(offset).modPos(this.size);
+
+        if(absOffset.x > this.size.x / 2 || absOffset.y > this.size.y / 2)
+        {
+            this.recompute();
+            return;
+        }
 
         let offsetToCheck = offset.mul(-1);
 
@@ -68,24 +77,24 @@ class ChunksCache
         {
             let xIndex = (i + this.head.x) % this.size.x;
             
-            //let xInNoChangeZone:boolean = true;
-            //if(offsetToCheck.x > 0 && i > this.size.x - offsetToCheck.x)
-            //    xInNoChangeZone = false;
-            //else if (offsetToCheck.x < 0 && i < offset.x)
-            //    xInNoChangeZone = false;
+            let xInNoChangeZone:boolean = true;
+            if(offsetToCheck.x > 0 && i < this.size.x - offsetToCheck.x)
+                xInNoChangeZone = false;
+            else if (offsetToCheck.x < 0 && i > offset.x)
+                xInNoChangeZone = false;
 
             for(let j = 0; j < this.size.y; ++j)
             {
                 let yIndex = (j + this.head.y) % this.size.y;
 
-                //let yInNoChangeZone:boolean = true;
-                //if(offsetToCheck.y > 0 && j > this.size.y - offsetToCheck.y)
-                //    yInNoChangeZone = false;
-                //else if (offsetToCheck.y < 0 && j < offset.y)
-                //    yInNoChangeZone = false;
+                let yInNoChangeZone:boolean = true;
+                if(offsetToCheck.y > 0 && j < this.size.y - offsetToCheck.y)
+                    yInNoChangeZone = false;
+                else if (offsetToCheck.y < 0 && j > offset.y)
+                    yInNoChangeZone = false;
 
-                    //if(xInNoChangeZone && yInNoChangeZone)
-                        //continue;
+                if(xInNoChangeZone && yInNoChangeZone)
+                    continue;
                 
                 let point = (new Vector2(xIndex, yIndex)).subPos(this.head).modPos(this.size);
                 this.matrix[yIndex][xIndex] = isSlimeChunk(point.x + this.reference.x, point.y + this.reference.y);
