@@ -74,19 +74,71 @@ function isSlimeChunkBedrock(x, y) {
     let n = mt.random_int(seed);
     return n % 10 == 0;
 }
+const PADDING_PERCENTAGE = 20;
 class ChunksCache {
-    constructor(size, reference) {
-        this.size = size.copy();
-        this.reference = reference.copy();
-        this.head = new Vector2(0, 0);
+    constructor(minPos, maxPos) {
         this.matrix = [];
-        for (let i = 0; i < size.y; ++i) {
+        this.recomputeFull(minPos, maxPos);
+    }
+    recomputeFull(minPos, maxPos) {
+        this.size = this.getSizeFromBounds(minPos, maxPos);
+        this.reference = this.getStartPointFromLowerBounds(minPos, maxPos);
+        this.head = new Vector2(0, 0);
+        this.recompute();
+    }
+    recompute() {
+        this.matrix.length = 0;
+        for (let i = this.reference.y; i < this.reference.y + this.size.y; ++i) {
             let row = [];
-            for (let j = 0; j < size.x; ++j) {
-                row.push(false);
-            }
+            for (let j = this.reference.x; j < this.reference.x + this.size.x; ++j)
+                row.push(isSlimeChunk(j, i));
             this.matrix.push(row);
         }
+    }
+    getSizeFromBounds(minPos, maxPos) {
+        let displayedSize = maxPos.subPos(minPos);
+        return displayedSize.addPos(displayedSize.mul(PADDING_PERCENTAGE / 100).floor());
+    }
+    getStartPointFromLowerBounds(minPos, maxPos) {
+        let displayedSize = maxPos.subPos(minPos);
+        return minPos.subPos(displayedSize.mul(PADDING_PERCENTAGE / 200)).floor();
+    }
+    moveTo(minPos, maxPos) {
+        if (!this.getSizeFromBounds(minPos, maxPos).equals(this.size)) {
+            this.recomputeFull(minPos, maxPos);
+            return;
+        }
+        let newReferencePos = this.getStartPointFromLowerBounds(minPos, maxPos);
+        let offset = newReferencePos.subPos(this.reference);
+        if (offset.isZero())
+            return;
+        this.reference = newReferencePos;
+        this.head = this.head.addPos(offset).modPos(this.size);
+        let offsetToCheck = offset.mul(-1);
+        for (let i = 0; i < this.size.x; ++i) {
+            let xIndex = (i + this.head.x) % this.size.x;
+            //let xInNoChangeZone:boolean = true;
+            //if(offsetToCheck.x > 0 && i > this.size.x - offsetToCheck.x)
+            //    xInNoChangeZone = false;
+            //else if (offsetToCheck.x < 0 && i < offset.x)
+            //    xInNoChangeZone = false;
+            for (let j = 0; j < this.size.y; ++j) {
+                let yIndex = (j + this.head.y) % this.size.y;
+                //let yInNoChangeZone:boolean = true;
+                //if(offsetToCheck.y > 0 && j > this.size.y - offsetToCheck.y)
+                //    yInNoChangeZone = false;
+                //else if (offsetToCheck.y < 0 && j < offset.y)
+                //    yInNoChangeZone = false;
+                //if(xInNoChangeZone && yInNoChangeZone)
+                //continue;
+                let point = (new Vector2(xIndex, yIndex)).subPos(this.head).modPos(this.size);
+                this.matrix[yIndex][xIndex] = isSlimeChunk(point.x + this.reference.x, point.y + this.reference.y);
+            }
+        }
+    }
+    isSlimeChunk(x, y) {
+        let index = (new Vector2(x, y)).subPos(this.reference).addPos(this.head).modPos(this.size);
+        return this.matrix[index.y][index.x];
     }
 }
 class Vector2 {
@@ -106,6 +158,7 @@ class Vector2 {
     equals(other) { return this.x == other.x && this.y == other.y; }
     addPos(other) { return new Vector2(this.x + other.x, this.y + other.y); }
     subPos(other) { return new Vector2(this.x - other.x, this.y - other.y); }
+    modPos(other) { return new Vector2(this.x.mod(other.x), this.y.mod(other.y)); }
     min(other) { return new Vector2(Math.min(this.x, other.x), Math.min(this.y, other.y)); }
     max(other) { return new Vector2(Math.max(this.x, other.x), Math.max(this.y, other.y)); }
     clamp(minValue, maxValue) { return this.min(new Vector2(maxValue, maxValue)).max(new Vector2(minValue, minValue)); }
@@ -274,6 +327,9 @@ var UpdateSearchStatsIntervalId = 0;
 var CurrentChunksChecked = 0;
 var IsBedrock = false;
 var CachedCanvasContext;
+const USE_CACHE = false;
+const DO_CACHE_CHECKS = USE_CACHE && true;
+var SlimeChunksCache = new ChunksCache(new Vector2(0, 0), new Vector2(0, 0));
 class Random {
     constructor(seed) {
         this.seed = (seed ^ 0x5deece66dn) & 281474976710655n;
@@ -292,10 +348,10 @@ class Random {
 function getKhaloophSize() {
     return IsBedrock ? KhaloophSizeBedrock : KhaloophSizeJava;
 }
-function isSlimeChunk(seed, x, z) {
+function isSlimeChunk(x, z) {
     if (IsBedrock)
         return isSlimeChunkBedrock(x, z);
-    let rngGen = new Random(seed + BigInt(Math.imul(Math.imul(x, x), 4987142)) + BigInt(Math.imul(x, 5947611)) + BigInt(Math.imul(z, z)) * 4392871n + BigInt(Math.imul(z, 389711)) ^ 987234911n);
+    let rngGen = new Random(Seed + BigInt(Math.imul(Math.imul(x, x), 4987142)) + BigInt(Math.imul(x, 5947611)) + BigInt(Math.imul(z, z)) * 4392871n + BigInt(Math.imul(z, 389711)) ^ 987234911n);
     return rngGen.nextInt();
 }
 function getInputElementById(id) {
@@ -354,6 +410,7 @@ function setInputs() {
         getInputElementById("reverseSearch").checked = invertedsearch == "true";
     if (isBedrock == "true")
         switchToBedrock();
+    SlimeChunksCache.recompute();
 }
 function onSeedChanged() {
     try {
@@ -362,6 +419,7 @@ function onSeedChanged() {
     catch {
         Seed = BigInt(getInputElementById("seed").value.hashCode());
     }
+    SlimeChunksCache.recompute();
     resetValues();
     onInputChanged();
 }
@@ -564,11 +622,20 @@ function drawGrid() {
 }
 function drawSlimeChunks() {
     let minPos = CanvasOffset.mul(-1).div(GRID_SPACING).floor();
-    let maxPos = CanvasOffset.mul(-1).addPos(CANVAS_WORKABLE_SIZE).div(GRID_SPACING).ceil();
+    let maxPos = minPos.addPos(CANVAS_WORKABLE_SIZE.div(GRID_SPACING).floor().add(1));
+    SlimeChunksCache.moveTo(minPos, maxPos);
     for (let i = minPos.x; i <= maxPos.x; ++i) {
         for (let j = minPos.y; j <= maxPos.y; ++j) {
-            if (isSlimeChunk(Seed, i, j))
-                drawSlimeChunk(new Vector2(i, j));
+            if (DO_CACHE_CHECKS && SlimeChunksCache.isSlimeChunk(i, j) != isSlimeChunk(i, j))
+                console.log("error in cache");
+            if (USE_CACHE) {
+                if (SlimeChunksCache.isSlimeChunk(i, j))
+                    drawSlimeChunk(new Vector2(i, j));
+            }
+            else {
+                if (isSlimeChunk(i, j))
+                    drawSlimeChunk(new Vector2(i, j));
+            }
         }
     }
 }
@@ -1005,7 +1072,7 @@ function processCurrentKhalooph() {
     for (let i = khaloophStart.x; i < CurrentKhalooph.end.x; ++i) {
         let idx1 = i - khaloophStart.x;
         for (let j = khaloophStart.y; j < CurrentKhalooph.end.y; ++j) {
-            if (isSlimeChunk(Seed, i, j) !== ReverseSearch)
+            if (isSlimeChunk(i, j) !== ReverseSearch)
                 chunksArray[idx1][j - khaloophStart.y] = true;
             else
                 chunksArray[idx1][j - khaloophStart.y] = false;
@@ -1053,6 +1120,7 @@ function resetValues() {
     document.getElementById("resultsFoundValue").innerHTML = "0";
     document.getElementById("chunksCheckedValue").innerHTML = "0";
     ShouldUpdateSearchResults = true;
+    SlimeChunksCache.recompute();
     updateSearchResults();
     drawCanvas();
 }
@@ -1184,6 +1252,10 @@ String.prototype.hashCode = function () {
         hash |= 0; // Convert to 32bit integer
     }
     return hash;
+};
+Number.prototype.mod = function (n) {
+    "use strict";
+    return ((this % n) + n) % n;
 };
 function switchToJava() {
     if (SearchInProgress)

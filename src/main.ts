@@ -134,6 +134,11 @@ var IsBedrock = false;
 
 var CachedCanvasContext:CanvasRenderingContext2D;
 
+const USE_CACHE = false;
+const DO_CACHE_CHECKS = USE_CACHE && true;
+
+var SlimeChunksCache = new ChunksCache(new Vector2(0, 0), new Vector2(0, 0));
+
 class Random 
 {
 	seed:bigint;
@@ -162,12 +167,12 @@ function getKhaloophSize():number
 	return IsBedrock ? KhaloophSizeBedrock : KhaloophSizeJava;
 }
 
-function isSlimeChunk(seed:bigint, x:number, z:number):boolean
+function isSlimeChunk(x:number, z:number):boolean
 {
 	if(IsBedrock)
 		return isSlimeChunkBedrock(x, z);
 
-	let rngGen = new Random(seed + BigInt(Math.imul(Math.imul(x, x), 4987142)) + BigInt(Math.imul(x, 5947611)) + BigInt(Math.imul(z, z)) * 4392871n + BigInt(Math.imul(z, 389711)) ^ 987234911n);
+	let rngGen = new Random(Seed + BigInt(Math.imul(Math.imul(x, x), 4987142)) + BigInt(Math.imul(x, 5947611)) + BigInt(Math.imul(z, z)) * 4392871n + BigInt(Math.imul(z, 389711)) ^ 987234911n);
 	return rngGen.nextInt();
 }
 
@@ -243,6 +248,8 @@ function setInputs():void
 		getInputElementById("reverseSearch").checked = invertedsearch == "true";
 	if(isBedrock == "true")
 		switchToBedrock();
+
+	SlimeChunksCache.recompute();
 }
 
 function onSeedChanged():void
@@ -253,6 +260,8 @@ function onSeedChanged():void
 	catch{
 		Seed = BigInt(getInputElementById("seed").value.hashCode());
 	}
+	
+	SlimeChunksCache.recompute();
 	
 	resetValues();
 
@@ -536,15 +545,28 @@ function drawGrid():void
 
 function drawSlimeChunks():void
 {
-	let minPos = CanvasOffset.mul(-1).div(GRID_SPACING).floor();
-	let maxPos = CanvasOffset.mul(-1).addPos(CANVAS_WORKABLE_SIZE).div(GRID_SPACING).ceil();
+	let minPos = CanvasOffset.mul(-1).div(GRID_SPACING).floor();	
+	let maxPos = minPos.addPos(CANVAS_WORKABLE_SIZE.div(GRID_SPACING).floor().add(1));
+
+	SlimeChunksCache.moveTo(minPos, maxPos);
 
 	for(let i = minPos.x; i <= maxPos.x; ++i)
 	{
 		for(let j = minPos.y; j <= maxPos.y; ++j)
 		{
-			if(isSlimeChunk(Seed,i,j))
-				drawSlimeChunk(new Vector2(i, j));
+			if(DO_CACHE_CHECKS && SlimeChunksCache.isSlimeChunk(i,j) != isSlimeChunk(i, j))
+				console.log("error in cache");
+
+			if(USE_CACHE)
+			{
+				if(SlimeChunksCache.isSlimeChunk(i,j))
+					drawSlimeChunk(new Vector2(i, j));
+			}
+			else
+			{
+				if(isSlimeChunk(i,j))
+					drawSlimeChunk(new Vector2(i, j));
+			}
 		}
 	}
 }
@@ -1174,7 +1196,7 @@ function processCurrentKhalooph():void
 		let idx1 = i - khaloophStart.x;
 		for(let j = khaloophStart.y; j < CurrentKhalooph.end.y; ++j)
 		{
-			if(isSlimeChunk(Seed, i, j) !== ReverseSearch)
+			if(isSlimeChunk(i, j) !== ReverseSearch)
 				chunksArray[idx1][j-khaloophStart.y] = true;
 			else
 				chunksArray[idx1][j-khaloophStart.y] = false;
@@ -1239,6 +1261,9 @@ function resetValues():void
 	document.getElementById("chunksCheckedValue").innerHTML = "0";
 
 	ShouldUpdateSearchResults = true;
+	
+	SlimeChunksCache.recompute();
+
 	updateSearchResults();
 	drawCanvas();
 }
@@ -1420,6 +1445,12 @@ String.prototype.hashCode = function()
 
 	return hash;
 };
+
+interface Number { mod(n:number): number; }
+Number.prototype.mod = function (n:number) {
+	"use strict";
+	return ((this as number % n) + n) % n;
+  };
 
 function switchToJava():void
 {

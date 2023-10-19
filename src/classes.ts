@@ -19,6 +19,7 @@ class Vector2
 	equals(other:Vector2):boolean {return this.x == other.x && this.y == other.y; }
 	addPos(other:Vector2):Vector2 { return new Vector2(this.x + other.x, this.y + other.y); }
 	subPos(other:Vector2):Vector2 { return new Vector2(this.x - other.x, this.y - other.y); }
+	modPos(other:Vector2):Vector2 { return new Vector2(this.x.mod(other.x), this.y.mod(other.y)); }
 	min(other:Vector2):Vector2 { return new Vector2(Math.min(this.x, other.x), Math.min(this.y, other.y)); }
 	max(other:Vector2):Vector2 { return new Vector2(Math.max(this.x, other.x), Math.max(this.y, other.y)); }
 	clamp(minValue:number, maxValue:number):Vector2 { return this.min(new Vector2(maxValue, maxValue)).max(new Vector2(minValue, minValue)); }
