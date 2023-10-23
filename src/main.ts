@@ -249,7 +249,7 @@ function setInputs():void
 	if(isBedrock == "true")
 		switchToBedrock();
 
-	SlimeChunksCache.recompute();
+	//SlimeChunksCache.recompute();
 }
 
 function onSeedChanged():void
@@ -261,7 +261,7 @@ function onSeedChanged():void
 		Seed = BigInt(getInputElementById("seed").value.hashCode());
 	}
 	
-	SlimeChunksCache.recompute();
+	//SlimeChunksCache.recompute();
 	
 	resetValues();
 

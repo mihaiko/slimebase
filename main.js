@@ -7,24 +7,15 @@ class MersenneChopped {
     }
     random_int(seed) {
         this.mt[0] = seed >>> 0;
-        for (this.mti = 1; this.mti < 624; this.mti++) {
+        for (this.mti = 1; this.mti < 398; this.mti++) {
             var s = this.mt[this.mti - 1] ^ (this.mt[this.mti - 1] >>> 30);
             this.mt[this.mti] = (((((s & 0xffff0000) >>> 16) * 1812433253) << 16) + (s & 0x0000ffff) * 1812433253) + this.mti;
             this.mt[this.mti] >>>= 0;
         }
         var y;
         var kk;
-        for (kk = 0; kk < 227; kk++) {
-            y = (this.mt[kk] & 0x80000000) | (this.mt[kk + 1] & 0x7fffffff);
-            this.mt[kk] = this.mt[kk + 397] ^ (y >>> 1) ^ this.mag01[y & 0x1];
-        }
-        for (; kk < 623; kk++) {
-            y = (this.mt[kk] & 0x80000000) | (this.mt[kk + 1] & 0x7fffffff);
-            this.mt[kk] = this.mt[kk - 227] ^ (y >>> 1) ^ this.mag01[y & 0x1];
-        }
-        y = (this.mt[623] & 0x80000000) | (this.mt[0] & 0x7fffffff);
-        this.mt[623] = this.mt[396] ^ (y >>> 1) ^ this.mag01[y & 0x1];
-        y = this.mt[0];
+        y = (this.mt[0] & 0x80000000) | (this.mt[0 + 1] & 0x7fffffff);
+        y = this.mt[397] ^ (y >>> 1) ^ this.mag01[y & 0x1];
         y ^= (y >>> 11);
         y ^= (y << 7) & 0x9d2c5680;
         y ^= (y << 15) & 0xefc60000;
@@ -397,7 +388,7 @@ function setInputs() {
         getInputElementById("reverseSearch").checked = invertedsearch == "true";
     if (isBedrock == "true")
         switchToBedrock();
-    SlimeChunksCache.recompute();
+    //SlimeChunksCache.recompute();
 }
 function onSeedChanged() {
     try {
@@ -406,7 +397,7 @@ function onSeedChanged() {
     catch {
         Seed = BigInt(getInputElementById("seed").value.hashCode());
     }
-    SlimeChunksCache.recompute();
+    //SlimeChunksCache.recompute();
     resetValues();
     onInputChanged();
 }
