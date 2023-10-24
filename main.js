@@ -288,7 +288,7 @@ var UpdateSearchStatsIntervalId = 0;
 var CurrentChunksChecked = 0;
 var IsBedrock = false;
 var CachedCanvasContext;
-const USE_CACHE = true;
+const USE_CACHE = false;
 const DO_CACHE_CHECKS = USE_CACHE && false;
 if (USE_CACHE)
     var SlimeChunksCache = new ChunksCache(new Vector2(0, 0), new Vector2(0, 0));

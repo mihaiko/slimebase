@@ -105,7 +105,7 @@ var IsBedrock = false;
 
 var CachedCanvasContext:CanvasRenderingContext2D;
 
-const USE_CACHE = true;
+const USE_CACHE = false;
 const DO_CACHE_CHECKS = USE_CACHE && false;
 
 if(USE_CACHE)
