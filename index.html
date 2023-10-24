@@ -1,132 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<title>Slime Base by Wicked</title>
-<link rel="stylesheet" href="main.css">
-<script src="main.js"></script>
-</head>
-<body onload="createCanvas(); createTitle();" >
-	<div id="container">
-		<div id="title_div">
-		</div>
-		<div id="versionSwitch">
-			<div id="javaEdition" class="selectedVersion" onclick="switchToJava()">
-				Java Edition
+	<head>
+		<meta charset="UTF-8">
+		<title>Find slime chunk clusters Minecraft 3x3, 2x4 etc. | Slime Base by Wicked</title>
+		<link rel="stylesheet" href="main.css">
+		<script src="main.js"></script>
+	</head>
+	<body onload="createCanvas(); createTitle();" >
+		<div id="container">
+			<div id="title_div">
 			</div>
-			<div id="bedrockEdition" class="alternateVersion selectable" onclick="switchToBedrock()">
-				Bedrock Edition
-			</div>
-		</div>
-		<div id="controls">
-			<div class="control" id="seed_controls">
-				<div class="controls_title">
-					SEED
+			<div id="versionSwitch">
+				<div id="javaEdition" class="selectedVersion" onclick="switchToJava()">
+					Java Edition
 				</div>
-				<div class="controls_content">
-					<input class="inputField" type="text" id="seed" placeholder="seed" onchange="onSeedChanged()" />
-					<input class="button_input" type="button" id="randomSeed" value="Randomize" onclick="setRandomSeed()" title="Generate a random seed." />
+				<div id="bedrockEdition" class="alternateVersion selectable" onclick="switchToBedrock()">
+					Bedrock Edition
 				</div>
 			</div>
-			<div class="control" id="search_controls">
-				<div class="controls_title" id="searchInProgress">
-					SEARCH FOR CLUSTERS
-				</div>
-				<div class="controls_content">
-					<div id="search_left">
-						<div class="inner_control">
-							<div class="inner_control_label">
-								Distance
-							</div>
-							<div class="inner_control_input">
-								<input class="inputField" type="number" min="100" id="searchdistance" placeholder="Search Distance"  value="1000000" onchange="onInputChanged()" />
-							</div>
-						</div>
-						<div class="inner_control">
-							<div class="inner_control_label">
-								Results Limit
-							</div>
-							<div class="inner_control_input">
-								<input class="inputField" type="number" min="1" id="searchlimit" placeholder="Search Result Limit"  value="100" onchange="onInputChanged()" />
-							</div>
-						</div>
+			<div id="controls">
+				<div class="control" id="seed_controls">
+					<div class="controls_title">
+						SEED
 					</div>
-					<div id="search_mid">						
-						<div class="inner_control">
-							<div class="inner_control_label">
-								Cluster Size
-							</div>
-							<div class="inner_control_input">
-								<input class="inputField" type="number" min="1" max="150" id="xcluster" placeholder="Cluster Width"  value="2" onchange="onInputChanged()" />
-								<input class="inputField" type="number" min="1" max="150" id="ycluster" placeholder="Cluster Height"  value="2" onchange="onInputChanged()" />
-							</div>
-						</div>
-						<div class="inner_control">
-							<div class="inner_control_label">
-								Inverted Search
-							</div>
-							<div class="inner_control_input">
-								<input type="checkbox" id="reverseSearch" onchange="onInputChanged()" />
-							</div>
-						</div>
-					</div>
-					<div id="search_right">
-						<input class="button_input" type="button" id="searchButton" value="GO" onclick="searchButtonPressed()" />
+					<div class="controls_content">
+						<input class="inputField" type="text" id="seed" placeholder="seed" onchange="onSeedChanged()" />
+						<input class="button_input" type="button" id="randomSeed" value="Randomize" onclick="setRandomSeed()" title="Generate a random seed." />
 					</div>
 				</div>
-			</div>
-			<div class="control" id="goto_controls">
-				<div class="controls_title">
-					GO TO POSITION
-				</div>
-				<div class="controls_content">
-					<div id="goto_left">
-						<div class="inner_control">
-							<div class="inner_control_label">
-								X
+				<div class="control" id="search_controls">
+					<div class="controls_title" id="searchInProgress">
+						SEARCH FOR CLUSTERS
+					</div>
+					<div class="controls_content">
+						<div id="search_left">
+							<div class="inner_control">
+								<div class="inner_control_label">
+									Distance
+								</div>
+								<div class="inner_control_input">
+									<input class="inputField" type="number" min="100" id="searchdistance" placeholder="Search Distance"  value="1000000" onchange="onInputChanged()" />
+								</div>
 							</div>
-							<div class="inner_control_input">
-								<input class="inputField" type="number" id="xvalue" placeholder="Start Position X" value="0" />
+							<div class="inner_control">
+								<div class="inner_control_label">
+									Results Limit
+								</div>
+								<div class="inner_control_input">
+									<input class="inputField" type="number" min="1" id="searchlimit" placeholder="Search Result Limit"  value="100" onchange="onInputChanged()" />
+								</div>
 							</div>
 						</div>
-						<div class="inner_control">
-							<div class="inner_control_label">
-								Z
+						<div id="search_mid">						
+							<div class="inner_control">
+								<div class="inner_control_label">
+									Cluster Size
+								</div>
+								<div class="inner_control_input">
+									<input class="inputField" type="number" min="1" max="150" id="xcluster" placeholder="Cluster Width"  value="2" onchange="onInputChanged()" />
+									<input class="inputField" type="number" min="1" max="150" id="ycluster" placeholder="Cluster Height"  value="2" onchange="onInputChanged()" />
+								</div>
 							</div>
-							<div class="inner_control_input">
-								<input class="inputField" type="number" id="zvalue" placeholder="Start Position Z"  value="0" />
+							<div class="inner_control">
+								<div class="inner_control_label">
+									Inverted Search
+								</div>
+								<div class="inner_control_input">
+									<input type="checkbox" id="reverseSearch" onchange="onInputChanged()" />
+								</div>
 							</div>
+						</div>
+						<div id="search_right">
+							<input class="button_input" type="button" id="searchButton" value="GO" onclick="searchButtonPressed()" />
 						</div>
 					</div>
-					<input class="button_input" type="button" id="gotoButton" value="GO" onclick="goToPosition()" />
+				</div>
+				<div class="control" id="goto_controls">
+					<div class="controls_title">
+						GO TO POSITION
+					</div>
+					<div class="controls_content">
+						<div id="goto_left">
+							<div class="inner_control">
+								<div class="inner_control_label">
+									X
+								</div>
+								<div class="inner_control_input">
+									<input class="inputField" type="number" id="xvalue" placeholder="Start Position X" value="0" />
+								</div>
+							</div>
+							<div class="inner_control">
+								<div class="inner_control_label">
+									Z
+								</div>
+								<div class="inner_control_input">
+									<input class="inputField" type="number" id="zvalue" placeholder="Start Position Z"  value="0" />
+								</div>
+							</div>
+						</div>
+						<input class="button_input" type="button" id="gotoButton" value="GO" onclick="goToPosition()" />
+					</div>
 				</div>
 			</div>
-		</div>
-		<div id="searchStats" class="control" hidden>
-			<div id="searchStatsInner" class="controls_content">
-				<div id="timeElapsed" class="searchStatsContainer">
-					<div class="resultsLabel" id="timeElapsedLabel">Time Elapsed</div>
-					<div class="resultsValue" id="timeElapsedValue">00:00:00</div>
-				</div>
-				<div id="chunksChecked" class="searchStatsContainer">
-					<div class="resultsLabel" id="chunksCheckedLabel">Chunks Checked</div>
-					<div class="resultsValue" id="chunksCheckedValue">0</div>
-				</div>
-				<div id="resultsFound" class="searchStatsContainer">
-					<div class="resultsLabel" id="resultsFoundLabel">Results Found</div>
-					<div class="resultsValue" id="resultsFoundValue">0</div>
+			<div id="searchStats" class="control" hidden>
+				<div id="searchStatsInner" class="controls_content">
+					<div id="timeElapsed" class="searchStatsContainer">
+						<div class="resultsLabel" id="timeElapsedLabel">Time Elapsed</div>
+						<div class="resultsValue" id="timeElapsedValue">00:00:00</div>
+					</div>
+					<div id="chunksChecked" class="searchStatsContainer">
+						<div class="resultsLabel" id="chunksCheckedLabel">Chunks Checked</div>
+						<div class="resultsValue" id="chunksCheckedValue">0</div>
+					</div>
+					<div id="resultsFound" class="searchStatsContainer">
+						<div class="resultsLabel" id="resultsFoundLabel">Results Found</div>
+						<div class="resultsValue" id="resultsFoundValue">0</div>
+					</div>
 				</div>
 			</div>
+			<div id="searchResults">
+			</div>
+			<div id="resultsControls">
+			</div>
+			<div id="canvasDiv">
+			</div>
+			<div id="donationDiv">
+				<script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+				<script type='text/javascript'>kofiwidget2.init('Help keep Slimy fed', '#44bb44', 'V7V4Q4TFW');kofiwidget2.draw();</script> 
+			</div>
 		</div>
-		<div id="searchResults">
-		</div>
-		<div id="resultsControls">
-		</div>
-		<div id="canvasDiv">
-		</div>
-		<div id="donationDiv">
-			<script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
-			<script type='text/javascript'>kofiwidget2.init('Help keep Slimy fed', '#44bb44', 'V7V4Q4TFW');kofiwidget2.draw();</script> 
-		</div>
-	</div>
-</body>
+	</body>
 </html>
