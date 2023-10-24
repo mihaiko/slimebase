@@ -1,3 +1,6 @@
+const MERSENNE_MAX_CACHE_VALUE = 10000000;
+var MersenneCache: { [key: number]: number } = {};
+var MersenneCacheSize = 0;
 class MersenneChopped
 {
     mt: Uint32Array;
@@ -13,6 +16,11 @@ class MersenneChopped
 
     random_int(seed:number):number
     {
+      const cached = MersenneCache[seed];
+  
+      if (cached !== undefined)
+        return cached;
+
         this.mt[0] = seed >>> 0;
         for (this.mti = 1; this.mti < 398; this.mti++) 
         {
@@ -32,7 +40,14 @@ class MersenneChopped
         y ^= (y << 15) & 0xefc60000;
         y ^= (y >>> 18);
 
-        return y >>> 0;
+        const result = y >>> 0;
+        MersenneCache[seed] = result;
+        MersenneCacheSize++;
+
+        if(MersenneCacheSize > MERSENNE_MAX_CACHE_VALUE)
+            MersenneCache = { };
+
+        return result;
     }
 }
 

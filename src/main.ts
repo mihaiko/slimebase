@@ -1,32 +1,3 @@
-/*
-P1:
-* add page metadata
-* make the page discoverable
-* rights reserved stuff
-* add website icon
-
-Nice to have:
-* get actual domain
-* make page extend to bottom
-* make honey stay on screen less
-* optimize bedrock algorithm
-* run on the GPU
-* touch controls for mobile
-* do something on honey pixel clicked
-* restrict canvas movement to left click
-* make pages button not offset
-* add tooltips
-* fix paging issue -> on resize from small to big -> last pages bs
-* profile
-* try to optimize drawing
-* try to separate the title a bit more from the rest of the page
-* on result hover, highlight on map if in view
-* add inertia
-* make mouse tooltip on hover
-* buffering (maybe? if done well)
-* carry over checks from one khalooph to another, maybe?
-*/
-
 const INNER_SLIME_CHUNK_COLOR = "#44bb44";
 const SLIME_CHUNK_BORDER_COLOR = "#226622";
 const CROSSHAIR_COLOR = "#00509090";
@@ -137,7 +108,8 @@ var CachedCanvasContext:CanvasRenderingContext2D;
 const USE_CACHE = true;
 const DO_CACHE_CHECKS = USE_CACHE && false;
 
-var SlimeChunksCache = new ChunksCache(new Vector2(0, 0), new Vector2(0, 0));
+if(USE_CACHE)
+	var SlimeChunksCache = new ChunksCache(new Vector2(0, 0), new Vector2(0, 0));
 
 class Random 
 {
@@ -249,7 +221,8 @@ function setInputs():void
 	if(isBedrock == "true")
 		switchToBedrock();
 
-	//SlimeChunksCache.recompute();
+	if(USE_CACHE)
+		SlimeChunksCache.recompute();
 }
 
 function onSeedChanged():void
@@ -261,7 +234,8 @@ function onSeedChanged():void
 		Seed = BigInt(getInputElementById("seed").value.hashCode());
 	}
 	
-	//SlimeChunksCache.recompute();
+	if(USE_CACHE)
+		SlimeChunksCache.recompute();
 	
 	resetValues();
 
@@ -545,7 +519,7 @@ function drawGrid():void
 
 function drawSlimeChunks():void
 {
-	let minPos = CanvasOffset.mul(-1).div(GRID_SPACING).floor();	
+	let minPos = CanvasOffset.mul(-1).div(GRID_SPACING).floor();
 	let maxPos = minPos.addPos(CANVAS_WORKABLE_SIZE.div(GRID_SPACING).floor().add(5));
 
 	if(USE_CACHE)
@@ -558,7 +532,6 @@ function drawSlimeChunks():void
 			if(DO_CACHE_CHECKS && SlimeChunksCache.isSlimeChunk(i,j) != isSlimeChunk(i, j))
 			{
 				console.log("error in cache "+  i + " " + j);
-				//console.log("error in cache");
 				drawCacheError(new Vector2(i, j));
 			}
 
@@ -1274,6 +1247,7 @@ function resetValues():void
 
 	ShouldUpdateSearchResults = true;
 	
+if(USE_CACHE)
 	SlimeChunksCache.recompute();
 
 	updateSearchResults();

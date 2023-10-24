@@ -1,4 +1,7 @@
 "use strict";
+const MERSENNE_MAX_CACHE_VALUE = 10000000;
+var MersenneCache = {};
+var MersenneCacheSize = 0;
 class MersenneChopped {
     constructor() {
         this.mt = new Uint32Array(624);
@@ -6,6 +9,9 @@ class MersenneChopped {
         this.mag01 = new Uint32Array([0x0, 0x9908b0df]);
     }
     random_int(seed) {
+        const cached = MersenneCache[seed];
+        if (cached !== undefined)
+            return cached;
         this.mt[0] = seed >>> 0;
         for (this.mti = 1; this.mti < 398; this.mti++) {
             var s = this.mt[this.mti - 1] ^ (this.mt[this.mti - 1] >>> 30);
@@ -20,7 +26,12 @@ class MersenneChopped {
         y ^= (y << 7) & 0x9d2c5680;
         y ^= (y << 15) & 0xefc60000;
         y ^= (y >>> 18);
-        return y >>> 0;
+        const result = y >>> 0;
+        MersenneCache[seed] = result;
+        MersenneCacheSize++;
+        if (MersenneCacheSize > MERSENNE_MAX_CACHE_VALUE)
+            MersenneCache = {};
+        return result;
     }
 }
 function umul32_lo(a, b) {
@@ -196,34 +207,6 @@ class OOSResult {
         this.position = position;
     }
 }
-/*
-P1:
-* add page metadata
-* make the page discoverable
-* rights reserved stuff
-* add website icon
-
-Nice to have:
-* get actual domain
-* make page extend to bottom
-* make honey stay on screen less
-* optimize bedrock algorithm
-* run on the GPU
-* touch controls for mobile
-* do something on honey pixel clicked
-* restrict canvas movement to left click
-* make pages button not offset
-* add tooltips
-* fix paging issue -> on resize from small to big -> last pages bs
-* profile
-* try to optimize drawing
-* try to separate the title a bit more from the rest of the page
-* on result hover, highlight on map if in view
-* add inertia
-* make mouse tooltip on hover
-* buffering (maybe? if done well)
-* carry over checks from one khalooph to another, maybe?
-*/
 const INNER_SLIME_CHUNK_COLOR = "#44bb44";
 const SLIME_CHUNK_BORDER_COLOR = "#226622";
 const CROSSHAIR_COLOR = "#00509090";
@@ -307,7 +290,8 @@ var IsBedrock = false;
 var CachedCanvasContext;
 const USE_CACHE = true;
 const DO_CACHE_CHECKS = USE_CACHE && false;
-var SlimeChunksCache = new ChunksCache(new Vector2(0, 0), new Vector2(0, 0));
+if (USE_CACHE)
+    var SlimeChunksCache = new ChunksCache(new Vector2(0, 0), new Vector2(0, 0));
 class Random {
     constructor(seed) {
         this.seed = (seed ^ 0x5deece66dn) & 281474976710655n;
@@ -388,7 +372,8 @@ function setInputs() {
         getInputElementById("reverseSearch").checked = invertedsearch == "true";
     if (isBedrock == "true")
         switchToBedrock();
-    //SlimeChunksCache.recompute();
+    if (USE_CACHE)
+        SlimeChunksCache.recompute();
 }
 function onSeedChanged() {
     try {
@@ -397,7 +382,8 @@ function onSeedChanged() {
     catch {
         Seed = BigInt(getInputElementById("seed").value.hashCode());
     }
-    //SlimeChunksCache.recompute();
+    if (USE_CACHE)
+        SlimeChunksCache.recompute();
     resetValues();
     onInputChanged();
 }
@@ -607,7 +593,6 @@ function drawSlimeChunks() {
         for (let j = minPos.y; j <= maxPos.y; ++j) {
             if (DO_CACHE_CHECKS && SlimeChunksCache.isSlimeChunk(i, j) != isSlimeChunk(i, j)) {
                 console.log("error in cache " + i + " " + j);
-                //console.log("error in cache");
                 drawCacheError(new Vector2(i, j));
             }
             if (USE_CACHE) {
@@ -1106,7 +1091,8 @@ function resetValues() {
     document.getElementById("resultsFoundValue").innerHTML = "0";
     document.getElementById("chunksCheckedValue").innerHTML = "0";
     ShouldUpdateSearchResults = true;
-    SlimeChunksCache.recompute();
+    if (USE_CACHE)
+        SlimeChunksCache.recompute();
     updateSearchResults();
     drawCanvas();
 }
