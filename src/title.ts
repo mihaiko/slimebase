@@ -1,3 +1,11 @@
+const myFont = new FontFace('freestyleScript', 'url(FREESCPT.TTF)');
+
+myFont.load().then((font) => {
+  document.fonts.add(font);
+
+  console.log('Font loaded');
+});
+
 const TEXT_ARRAY = [
     [0,1,1,1, 0, 1,0,0, 0, 1, 0, 1,0,0,0,1, 0, 1,1,1,1, 0,0,0,0, 1,1,1,0, 0, 0,1,1,0, 0, 0,1,1,1, 0, 1,1,1,1],
     [1,0,0,0, 0, 1,0,0, 0, 1, 0, 1,1,0,1,1, 0, 1,0,0,0, 0,0,0,0, 1,0,0,1, 0, 1,0,0,1, 0, 1,0,0,0, 0, 1,0,0,0],
@@ -62,7 +70,7 @@ function drawAuthor()
 	ctx.shadowColor = "black";
     ctx.shadowBlur = 4;
 	ctx.textAlign = "left";
-	ctx.font = "64px Freestyle Script";
+	ctx.font = "64px freestyleScript";
 	ctx.fillText("by Wicked", position.x, position.y);
 	ctx.lineWidth = 0.5;
 	ctx.strokeStyle = "#33885599";
