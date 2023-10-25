@@ -207,6 +207,12 @@ class OOSResult {
         this.position = position;
     }
 }
+class RunningWorker {
+    constructor(id, worker) {
+        this.id = id;
+        this.worker = worker;
+    }
+}
 const INNER_SLIME_CHUNK_COLOR = "#44bb44";
 const SLIME_CHUNK_BORDER_COLOR = "#226622";
 const CROSSHAIR_COLOR = "#00509090";
@@ -290,6 +296,9 @@ var IsBedrock = false;
 var CachedCanvasContext;
 const USE_CACHE = false;
 const DO_CACHE_CHECKS = USE_CACHE && false;
+const USE_WORKERS = false;
+const MAX_WORKERS = 20;
+var RunningWorkers = [];
 if (USE_CACHE)
     var SlimeChunksCache = new ChunksCache(new Vector2(0, 0), new Vector2(0, 0));
 class Random {
@@ -1126,13 +1135,93 @@ function startSearch() {
     SearchOrigin = PinPosition;
     console.log("Start Search: Seed: " + Seed + " StartX: " + PinPosition.x + " StartY: " + PinPosition.y);
     setInitialKhalooph(PinPosition.div(CHUNK_SIZE).floor());
-    processCurrentKhalooph();
+    if (USE_WORKERS)
+        startWorkers();
+    else
+        processCurrentKhalooph();
     updateInputs();
     const currentDate = new Date();
     StartSearchTimestamp = Math.floor(currentDate.getTime() / 1000);
     LastUpdateTimestamp = StartSearchTimestamp;
     updateTimeElapsed();
     UpdateSearchStatsIntervalId = setInterval(updateSearchInfo, 0);
+}
+var workerScript = `
+	function workKhalooph(khalooph)
+	{
+
+	}
+
+	self.onmessage = (e) => {
+		let sum = 0;
+		for (let n = 0; n < 100000; ++n)
+		{
+			workKhalooph();
+			sum += n;
+		}
+    	this.postMessage({ id: e.data.id });
+	};
+`;
+var blob = new Blob([workerScript], { type: 'application/javascript' });
+var workerScriptUrl = URL.createObjectURL(blob);
+function startWorkers() {
+    for (let i = 0; i < MAX_WORKERS; ++i) {
+        let worker = new Worker('worker.js');
+        worker.onmessage = workerDone;
+        worker.postMessage({ id: i,
+            khalooph: CurrentKhalooph,
+            khaloopSize: getKhaloophSize(),
+            reverseSearch: ReverseSearch,
+            seed: Seed,
+            isBedrock: IsBedrock,
+            khaloophSearchMin: KhaloophSearchMin,
+            clusterSize: ClusterSize,
+            chunkSize: CHUNK_SIZE,
+            searchOrigin: SearchOrigin });
+        setNextKhalooph();
+        let runningWorker = new RunningWorker(i, worker);
+        RunningWorkers.push(runningWorker);
+    }
+}
+function workerDone(e) {
+    let workerId = e.data.id;
+    for (let i = 0; i < e.data.results.length; ++i) {
+        let currentResult = e.data.results[i];
+        let currentCluster = new Cluster(new Vector2(0, 0), new Vector2(0, 0));
+        currentCluster.bottomRight = new Vector2(currentResult.bottomRight.x, currentResult.bottomRight.y);
+        currentCluster.topLeft = new Vector2(currentResult.topLeft.x, currentResult.topLeft.y);
+        currentCluster.center = new Vector2(currentResult.center.x, currentResult.center.y);
+        currentCluster.distanceFromOrigin = currentResult.distanceFromOrigin;
+        currentCluster.distanceFromViewportSquared = currentResult.distanceFromViewportSquared;
+        TempResults.push(currentCluster);
+    }
+    addPendingResults();
+    updateSearchResults();
+    //console.log("worker " + workerId +  " done");
+    let workerIndex = 0;
+    for (; workerIndex < RunningWorkers.length; ++workerIndex)
+        if (RunningWorkers[workerIndex].id == workerId)
+            break;
+    if (SearchInProgress) {
+        RunningWorkers[workerIndex].worker.postMessage({ id: e.data.id,
+            khalooph: CurrentKhalooph,
+            khaloopSize: getKhaloophSize(),
+            reverseSearch: ReverseSearch,
+            seed: Seed,
+            isBedrock: IsBedrock,
+            khaloophSearchMin: KhaloophSearchMin,
+            clusterSize: ClusterSize,
+            chunkSize: CHUNK_SIZE,
+            searchOrigin: SearchOrigin });
+        setNextKhalooph();
+    }
+    else
+        RunningWorkers.splice(workerIndex, 1);
+}
+function stopWorkers() {
+    for (let i = 0; i < RunningWorkers.length; ++i)
+        RunningWorkers[i].worker.terminate;
+    RunningWorkers.length = 0;
 }
 function updateSearchInfo() {
     if (ShouldStopSearchTimer) {
@@ -1171,6 +1260,7 @@ function onSearchStopped() {
     updateInputs();
     console.log("Search Stopped/Finished");
     document.getElementById("searchInProgress").innerHTML = "Search completed!";
+    stopWorkers();
     ShouldStopSearchTimer = true;
 }
 function updateInputs() {
@@ -1353,7 +1443,6 @@ function getNextFrame() {
 const myFont = new FontFace('freestyleScript', 'url(FREESCPT.TTF)');
 myFont.load().then((font) => {
     document.fonts.add(font);
-    console.log('Font loaded');
 });
 const TEXT_ARRAY = [
     [0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1],

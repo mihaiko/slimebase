@@ -2,8 +2,6 @@ const myFont = new FontFace('freestyleScript', 'url(FREESCPT.TTF)');
 
 myFont.load().then((font) => {
   document.fonts.add(font);
-
-  console.log('Font loaded');
 });
 
 const TEXT_ARRAY = [

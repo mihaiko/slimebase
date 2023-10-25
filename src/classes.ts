@@ -115,3 +115,15 @@ class OOSResult
 		this.position = position;
 	}
 }
+
+class RunningWorker
+{
+	id:number;
+	worker:Worker;
+
+	constructor(id:number, worker:Worker)
+	{
+		this.id = id;
+		this.worker = worker;
+	}
+}
