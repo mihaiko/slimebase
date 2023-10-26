@@ -109,7 +109,7 @@ const USE_CACHE = false;
 const DO_CACHE_CHECKS = USE_CACHE && false;
 
 const USE_WORKERS = false;
-const MAX_WORKERS = 20;
+const MAX_WORKERS = 10;
 var RunningWorkers:RunningWorker[] = [];
 
 if(USE_CACHE)

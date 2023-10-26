@@ -29,8 +29,10 @@ class MersenneChopped {
         const result = y >>> 0;
         MersenneCache[seed] = result;
         MersenneCacheSize++;
-        if (MersenneCacheSize > MERSENNE_MAX_CACHE_VALUE)
+        if (MersenneCacheSize > MERSENNE_MAX_CACHE_VALUE) {
             MersenneCache = {};
+            MersenneCacheSize = 0;
+        }
         return result;
     }
 }
@@ -297,7 +299,7 @@ var CachedCanvasContext;
 const USE_CACHE = false;
 const DO_CACHE_CHECKS = USE_CACHE && false;
 const USE_WORKERS = false;
-const MAX_WORKERS = 20;
+const MAX_WORKERS = 10;
 var RunningWorkers = [];
 if (USE_CACHE)
     var SlimeChunksCache = new ChunksCache(new Vector2(0, 0), new Vector2(0, 0));

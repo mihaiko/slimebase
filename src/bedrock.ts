@@ -44,9 +44,12 @@ class MersenneChopped
         MersenneCache[seed] = result;
         MersenneCacheSize++;
 
-        if(MersenneCacheSize > MERSENNE_MAX_CACHE_VALUE)
-            MersenneCache = { };
-
+        if (MersenneCacheSize > MERSENNE_MAX_CACHE_VALUE)
+        {
+            MersenneCache = {};
+            MersenneCacheSize = 0;
+        }
+        
         return result;
     }
 }
