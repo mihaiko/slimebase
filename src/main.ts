@@ -1316,27 +1316,6 @@ function startSearch():void
 	UpdateSearchStatsIntervalId = setInterval(updateSearchInfo, 0);
 }
 
-var workerScript = `
-	function workKhalooph(khalooph)
-	{
-
-	}
-
-	self.onmessage = (e) => {
-		let sum = 0;
-		for (let n = 0; n < 100000; ++n)
-		{
-			workKhalooph();
-			sum += n;
-		}
-    	this.postMessage({ id: e.data.id });
-	};
-`;
-
-var blob = new Blob([workerScript], { type: 'application/javascript' });
-var workerScriptUrl = URL.createObjectURL(blob);
-
-
 function startWorkers():void
 {
 	for(let i = 0; i < MAX_WORKERS; ++i)
