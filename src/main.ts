@@ -108,7 +108,7 @@ var CachedCanvasContext:CanvasRenderingContext2D;
 const USE_CACHE = false;
 const DO_CACHE_CHECKS = USE_CACHE && false;
 
-const USE_WORKERS = false;
+const USE_WORKERS = true;
 const MAX_WORKERS = 10;
 var RunningWorkers:RunningWorker[] = [];
 
@@ -1165,10 +1165,7 @@ function getClusterFromChunksList(chunks:Vector2[]):Cluster
 
 function processCurrentKhalooph():void
 {
-	if (Math.abs(CurrentKhalooph.start.x) + Math.abs(CurrentKhalooph.end.x) > (SearchDistance / CHUNK_SIZE)
-	|| Math.abs(CurrentKhalooph.start.y) + Math.abs(CurrentKhalooph.end.y) > (SearchDistance / CHUNK_SIZE)
-	|| ResultsArray.length >= SearchResultLimit
-	|| StopSearchRequested)
+	if (shouldStop())
 	{
 		onSearchStopped();
 		return;
@@ -1266,6 +1263,11 @@ function searchButtonPressed():void
 		startSearch();
 }
 
+function canUseWorkers():boolean
+{
+	return typeof(Worker) !== "undefined";
+}
+
 function startSearch():void
 {
 	resetValues();
@@ -1300,7 +1302,7 @@ function startSearch():void
 	console.log("Start Search: Seed: " + Seed + " StartX: " + PinPosition.x + " StartY: " + PinPosition.y);
 	setInitialKhalooph(PinPosition.div(CHUNK_SIZE).floor());
 
-	if(USE_WORKERS)
+	if(USE_WORKERS && canUseWorkers())
 		startWorkers();
 	else
 		processCurrentKhalooph();
@@ -1359,9 +1361,23 @@ function startWorkers():void
 	}
 }
 
+function shouldStop():boolean
+{
+	if(!SearchInProgress)
+		return false;
+
+	return Math.abs(CurrentKhalooph.start.x) + Math.abs(CurrentKhalooph.end.x) > (SearchDistance / CHUNK_SIZE)
+		|| Math.abs(CurrentKhalooph.start.y) + Math.abs(CurrentKhalooph.end.y) > (SearchDistance / CHUNK_SIZE)
+		|| ResultsArray.length >= SearchResultLimit
+		|| StopSearchRequested;
+}
+
 function workerDone(e:any):void
 {
 	let workerId = e.data.id;
+
+	CurrentChunksChecked += (getKhaloophSize() - ClusterSizeOverlap) ** 2;
+	document.getElementById("chunksCheckedValue").innerHTML = Intl.NumberFormat().format(CurrentChunksChecked);
 
 	for(let i = 0; i < e.data.results.length; ++i)
 	{
@@ -1378,13 +1394,12 @@ function workerDone(e:any):void
 	addPendingResults();
 	updateSearchResults();
 
-	//console.log("worker " + workerId +  " done");
 	let workerIndex = 0;
 	for(; workerIndex < RunningWorkers.length; ++workerIndex)
 		if(RunningWorkers[workerIndex].id == workerId)
 			break;
 
-	if(SearchInProgress)
+	if(!shouldStop())
 	{
 		RunningWorkers[workerIndex].worker.postMessage({ id: e.data.id,
 			khalooph: CurrentKhalooph,
@@ -1400,13 +1415,22 @@ function workerDone(e:any):void
 		setNextKhalooph();
 	}
 	else
+	{
+		RunningWorkers[workerIndex].worker.terminate();
 		RunningWorkers.splice(workerIndex, 1);
+	}
+
+	if(RunningWorkers.length == 0)
+	{
+		onSearchStopped();
+	}
 }
 
 function stopWorkers():void
 {
 	for(let i = 0; i < RunningWorkers.length; ++i)
-		RunningWorkers[i].worker.terminate;
+		RunningWorkers[i].worker.terminate();
+
 	RunningWorkers.length = 0;
 }
 
@@ -1460,8 +1484,6 @@ function onSearchStopped():void
 	console.log("Search Stopped/Finished");
 
 	document.getElementById("searchInProgress").innerHTML = "Search completed!";
-
-	stopWorkers();
 	
 	ShouldStopSearchTimer = true;
 }
@@ -1546,7 +1568,7 @@ Number.prototype.mod = function (n:number) {
 
 function switchToJava():void
 {
-	if(SearchInProgress)
+	if(SearchInProgress || !IsBedrock)
 		return;
 
 	IsBedrock = false;
@@ -1563,7 +1585,7 @@ function switchToJava():void
 
 function switchToBedrock():void
 {
-	if(SearchInProgress)
+	if(SearchInProgress || IsBedrock)
 		return;
 
 	IsBedrock = true;

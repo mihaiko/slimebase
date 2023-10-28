@@ -298,7 +298,7 @@ var IsBedrock = false;
 var CachedCanvasContext;
 const USE_CACHE = false;
 const DO_CACHE_CHECKS = USE_CACHE && false;
-const USE_WORKERS = false;
+const USE_WORKERS = true;
 const MAX_WORKERS = 10;
 var RunningWorkers = [];
 if (USE_CACHE)
@@ -1039,10 +1039,7 @@ function getClusterFromChunksList(chunks) {
     return new Cluster(minPos, maxPos);
 }
 function processCurrentKhalooph() {
-    if (Math.abs(CurrentKhalooph.start.x) + Math.abs(CurrentKhalooph.end.x) > (SearchDistance / CHUNK_SIZE)
-        || Math.abs(CurrentKhalooph.start.y) + Math.abs(CurrentKhalooph.end.y) > (SearchDistance / CHUNK_SIZE)
-        || ResultsArray.length >= SearchResultLimit
-        || StopSearchRequested) {
+    if (shouldStop()) {
         onSearchStopped();
         return;
     }
@@ -1113,6 +1110,9 @@ function searchButtonPressed() {
     else
         startSearch();
 }
+function canUseWorkers() {
+    return typeof (Worker) !== "undefined";
+}
 function startSearch() {
     resetValues();
     SearchInProgress = true;
@@ -1137,7 +1137,7 @@ function startSearch() {
     SearchOrigin = PinPosition;
     console.log("Start Search: Seed: " + Seed + " StartX: " + PinPosition.x + " StartY: " + PinPosition.y);
     setInitialKhalooph(PinPosition.div(CHUNK_SIZE).floor());
-    if (USE_WORKERS)
+    if (USE_WORKERS && canUseWorkers())
         startWorkers();
     else
         processCurrentKhalooph();
@@ -1185,8 +1185,18 @@ function startWorkers() {
         RunningWorkers.push(runningWorker);
     }
 }
+function shouldStop() {
+    if (!SearchInProgress)
+        return false;
+    return Math.abs(CurrentKhalooph.start.x) + Math.abs(CurrentKhalooph.end.x) > (SearchDistance / CHUNK_SIZE)
+        || Math.abs(CurrentKhalooph.start.y) + Math.abs(CurrentKhalooph.end.y) > (SearchDistance / CHUNK_SIZE)
+        || ResultsArray.length >= SearchResultLimit
+        || StopSearchRequested;
+}
 function workerDone(e) {
     let workerId = e.data.id;
+    CurrentChunksChecked += (getKhaloophSize() - ClusterSizeOverlap) ** 2;
+    document.getElementById("chunksCheckedValue").innerHTML = Intl.NumberFormat().format(CurrentChunksChecked);
     for (let i = 0; i < e.data.results.length; ++i) {
         let currentResult = e.data.results[i];
         let currentCluster = new Cluster(new Vector2(0, 0), new Vector2(0, 0));
@@ -1199,12 +1209,11 @@ function workerDone(e) {
     }
     addPendingResults();
     updateSearchResults();
-    //console.log("worker " + workerId +  " done");
     let workerIndex = 0;
     for (; workerIndex < RunningWorkers.length; ++workerIndex)
         if (RunningWorkers[workerIndex].id == workerId)
             break;
-    if (SearchInProgress) {
+    if (!shouldStop()) {
         RunningWorkers[workerIndex].worker.postMessage({ id: e.data.id,
             khalooph: CurrentKhalooph,
             khaloopSize: getKhaloophSize(),
@@ -1217,12 +1226,17 @@ function workerDone(e) {
             searchOrigin: SearchOrigin });
         setNextKhalooph();
     }
-    else
+    else {
+        RunningWorkers[workerIndex].worker.terminate();
         RunningWorkers.splice(workerIndex, 1);
+    }
+    if (RunningWorkers.length == 0) {
+        onSearchStopped();
+    }
 }
 function stopWorkers() {
     for (let i = 0; i < RunningWorkers.length; ++i)
-        RunningWorkers[i].worker.terminate;
+        RunningWorkers[i].worker.terminate();
     RunningWorkers.length = 0;
 }
 function updateSearchInfo() {
@@ -1262,7 +1276,6 @@ function onSearchStopped() {
     updateInputs();
     console.log("Search Stopped/Finished");
     document.getElementById("searchInProgress").innerHTML = "Search completed!";
-    stopWorkers();
     ShouldStopSearchTimer = true;
 }
 function updateInputs() {
@@ -1322,7 +1335,7 @@ Number.prototype.mod = function (n) {
     return ((this % n) + n) % n;
 };
 function switchToJava() {
-    if (SearchInProgress)
+    if (SearchInProgress || !IsBedrock)
         return;
     IsBedrock = false;
     document.getElementById("javaEdition").setAttribute("class", "selectedVersion");
@@ -1333,7 +1346,7 @@ function switchToJava() {
     onInputChanged();
 }
 function switchToBedrock() {
-    if (SearchInProgress)
+    if (SearchInProgress || IsBedrock)
         return;
     IsBedrock = true;
     document.getElementById("javaEdition").setAttribute("class", "alternateVersion selectable");

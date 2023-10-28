@@ -69,7 +69,7 @@ class Random {
     }
 }
 
-const MERSENNE_MAX_CACHE_VALUE = 1000000;
+const MERSENNE_MAX_CACHE_VALUE = 500000;
 var MersenneCache = {};
 var MersenneCacheSize = 0;
 class MersenneChopped {
