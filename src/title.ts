@@ -61,20 +61,27 @@ function onWindowResizeTitle()
 
 function drawAuthor()
 {
-	const AUTHOR_OFFSET = new Vector2(250, 160);
-	let ctx = getTitleContext();
-	ctx.fillStyle = COLORS_ARRAY[1];
-	let position = new Vector2(TITLE_TOTAL_SIZE.x / 2 + AUTHOR_OFFSET.x, AUTHOR_OFFSET.y);
-	ctx.shadowColor = "black";
-    ctx.shadowBlur = 4;
-	ctx.textAlign = "left";
-	ctx.font = "64px freestyleScript";
-	ctx.fillText("by Wicked", position.x, position.y);
-	ctx.lineWidth = 0.5;
-	ctx.strokeStyle = "#33885599";
-	ctx.strokeText("by Wicked", position.x, position.y);
+    if(document.fonts.check("64px freestyleScript"))
+    {
+        const AUTHOR_OFFSET = new Vector2(250, 160);
+        let ctx = getTitleContext();
+        ctx.fillStyle = COLORS_ARRAY[1];
+        let position = new Vector2(TITLE_TOTAL_SIZE.x / 2 + AUTHOR_OFFSET.x, AUTHOR_OFFSET.y);
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 4;
+        ctx.textAlign = "left";
+        ctx.font = "64px freestyleScript";
+        ctx.fillText("by Wicked", position.x, position.y);
+        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = "#33885599";
+        ctx.strokeText("by Wicked", position.x, position.y);
 
-	ctx.shadowBlur = 0;
+        ctx.shadowBlur = 0;
+    }
+    else
+    {
+        setTimeout(drawAuthor, 0);
+    }
 }
 
 function getSlimeColor()
