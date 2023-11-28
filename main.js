@@ -296,6 +296,7 @@ var UpdateSearchStatsIntervalId = 0;
 var CurrentChunksChecked = 0;
 var IsBedrock = false;
 var CachedCanvasContext;
+const SEARCH_FROM_PIN_POSITION = false;
 const USE_CACHE = false;
 const DO_CACHE_CHECKS = USE_CACHE && false;
 const USE_WORKERS = true;
@@ -1134,9 +1135,12 @@ function startSearch() {
     let clusterSizeMax = Math.max(ClusterSize.x, ClusterSize.y);
     ClusterSizeOverlap = clusterSizeMax - 1;
     KhaloophSearchMin = getKhaloophSize() - clusterSizeMin + 1;
-    SearchOrigin = PinPosition;
-    console.log("Start Search: Seed: " + Seed + " StartX: " + PinPosition.x + " StartY: " + PinPosition.y);
-    setInitialKhalooph(PinPosition.div(CHUNK_SIZE).floor());
+    if (SEARCH_FROM_PIN_POSITION)
+        SearchOrigin = PinPosition;
+    else
+        SearchOrigin = new Vector2(0, 0);
+    console.log("Start Search: Seed: " + Seed + " StartX: " + SearchOrigin.x + " StartY: " + SearchOrigin.y);
+    setInitialKhalooph(SearchOrigin.div(CHUNK_SIZE).floor());
     if (USE_WORKERS && canUseWorkers())
         startWorkers();
     else
